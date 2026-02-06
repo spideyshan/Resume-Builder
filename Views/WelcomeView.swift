@@ -3,6 +3,7 @@ import SwiftUI
 struct WelcomeView: View {
     @State private var isBreathing = false
     
+    var body: some View {
         VStack(spacing: 0) {
             Spacer()
             
