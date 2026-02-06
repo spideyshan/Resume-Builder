@@ -4,10 +4,8 @@ struct WelcomeView: View {
     @State private var isBreathing = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            
-            // Central Content (Icon + Title)
+        ZStack {
+            // Central Content (Icon + Title) - Strictly Centered
             VStack(spacing: 24) {
                 // Simple document icon with breathing animation
                 ZStack {
@@ -37,7 +35,7 @@ struct WelcomeView: View {
                             .frame(width: 30, height: 3)
                     }
                 }
-                .scaleEffect(isBreathing ? 1.03 : 1.0) // Reduced to 3% for subtlety
+                .scaleEffect(isBreathing ? 1.03 : 1.0)
                 .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: isBreathing)
                 .onAppear {
                     isBreathing = true
@@ -55,28 +53,30 @@ struct WelcomeView: View {
                         .padding(.horizontal)
                 }
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity) // Occupies full space to center content
             
-            Spacer()
-            
-            // Start button
-            NavigationLink {
-                ResumeFormView()
-            } label: {
-                Text("Get Started")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(Color(.systemBackground))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.primary)
-                    .cornerRadius(10)
+            // Bottom Button - Anchored to bottom
+            VStack {
+                Spacer()
+                
+                NavigationLink {
+                    ResumeFormView()
+                } label: {
+                    Text("Get Started")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(Color(.systemBackground))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.primary)
+                        .cornerRadius(10)
+                }
+                .simultaneousGesture(TapGesture().onEnded {
+                    let generator = UIImpactFeedbackGenerator(style: .heavy)
+                    generator.impactOccurred()
+                })
+                .padding(.horizontal, 24)
+                .padding(.bottom, 40)
             }
-            .simultaneousGesture(TapGesture().onEnded {
-                let generator = UIImpactFeedbackGenerator(style: .heavy) // Increased intensity
-                generator.impactOccurred()
-            })
-            .padding(.horizontal, 24)
-            .padding(.bottom, 40)
         }
         .navigationBarHidden(true)
     }
