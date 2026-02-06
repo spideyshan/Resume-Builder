@@ -1,50 +1,61 @@
 import SwiftUI
 
 struct WelcomeView: View {
+    @State private var isBreathing = false
     
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
             
-            // Simple document icon
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.black)
-                    .frame(width: 80, height: 100)
+            // Central Content (Icon + Title)
+            VStack(spacing: 24) {
+                // Simple document icon with breathing animation
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.primary) // Adapts to Dark Mode
+                        .frame(width: 80, height: 100)
+                    
+                    VStack(alignment: .leading, spacing: 6) {
+                        Rectangle()
+                            .fill(Color(.systemBackground)) // Adapts to Dark Mode
+                            .frame(width: 40, height: 4)
+                        Rectangle()
+                            .fill(Color(.systemBackground).opacity(0.6))
+                            .frame(width: 50, height: 3)
+                        Rectangle()
+                            .fill(Color(.systemBackground).opacity(0.4))
+                            .frame(width: 35, height: 3)
+                        Spacer().frame(height: 8)
+                        Rectangle()
+                            .fill(Color(.systemBackground).opacity(0.3))
+                            .frame(width: 45, height: 3)
+                        Rectangle()
+                            .fill(Color(.systemBackground).opacity(0.3))
+                            .frame(width: 50, height: 3)
+                        Rectangle()
+                            .fill(Color(.systemBackground).opacity(0.3))
+                            .frame(width: 30, height: 3)
+                    }
+                }
+                .scaleEffect(isBreathing ? 1.03 : 1.0) // Reduced to 3% for subtlety
+                .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: isBreathing)
+                .onAppear {
+                    isBreathing = true
+                }
                 
-                VStack(alignment: .leading, spacing: 6) {
-                    Rectangle()
-                        .fill(Color.white)
-                        .frame(width: 40, height: 4)
-                    Rectangle()
-                        .fill(Color.white.opacity(0.6))
-                        .frame(width: 50, height: 3)
-                    Rectangle()
-                        .fill(Color.white.opacity(0.4))
-                        .frame(width: 35, height: 3)
-                    Spacer().frame(height: 8)
-                    Rectangle()
-                        .fill(Color.white.opacity(0.3))
-                        .frame(width: 45, height: 3)
-                    Rectangle()
-                        .fill(Color.white.opacity(0.3))
-                        .frame(width: 50, height: 3)
-                    Rectangle()
-                        .fill(Color.white.opacity(0.3))
-                        .frame(width: 30, height: 3)
+                // Title Group
+                VStack(spacing: 8) {
+                    Text("Resume Builder")
+                        .font(.custom("Times New Roman", size: 32).weight(.bold))
+                    
+                    Text("Create a professional resume in minutes")
+                        .font(.system(size: 15))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
                 }
             }
-            .padding(.bottom, 40)
-            
-            // Title
-            VStack(spacing: 6) {
-                Text("Resume Builder")
-                    .font(.system(size: 28, weight: .bold))
-                
-                Text("Create a professional resume in minutes")
-                    .font(.system(size: 15))
-                    .foregroundColor(.secondary)
-            }
+            .frame(maxWidth: .infinity)
             
             Spacer()
             
@@ -54,12 +65,16 @@ struct WelcomeView: View {
             } label: {
                 Text("Get Started")
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color(.systemBackground))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(Color.black)
+                    .background(Color.primary)
                     .cornerRadius(10)
             }
+            .simultaneousGesture(TapGesture().onEnded {
+                let generator = UIImpactFeedbackGenerator(style: .heavy) // Increased intensity
+                generator.impactOccurred()
+            })
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
