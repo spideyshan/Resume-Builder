@@ -228,16 +228,28 @@ struct ClassicTemplateView: View {
                     ForEach(resume.projects) { project in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                Text(project.name)
-                                    .font(.system(size: 14, weight: .semibold))
+                                if project.hasValidLink {
+                                    Button {
+                                        if let url = project.url { openURL(url) }
+                                    } label: {
+                                        Text(project.name)
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(.black)
+                                    }
+                                } else {
+                                    Text(project.name)
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
                                 Spacer()
-                                Text(project.tools)
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.gray)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 3)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(4)
+                                if !project.tools.isEmpty {
+                                    Text(project.tools)
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.gray)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(Color(.systemGray6))
+                                        .cornerRadius(4)
+                                }
                             }
                             
                             ForEach(project.bullets, id: \.self) { bullet in
@@ -273,7 +285,11 @@ struct ClassicTemplateView: View {
                                             .font(.system(size: 11))
                                             .padding(.horizontal, 10)
                                             .padding(.vertical, 5)
-                                            .background(Color(.systemGray6))
+                                            .background(Color.white)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 4)
+                                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                            )
                                             .cornerRadius(4)
                                     }
                                 }
@@ -416,8 +432,18 @@ struct SimpleTemplateView: View {
                     ForEach(resume.projects) { project in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                Text(project.name)
-                                    .font(.system(size: 14, weight: .semibold))
+                                if project.hasValidLink {
+                                    Button {
+                                        if let url = project.url { openURL(url) }
+                                    } label: {
+                                        Text(project.name)
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(.black)
+                                    }
+                                } else {
+                                    Text(project.name)
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
                                 if !project.tools.isEmpty {
                                     Text("(\(project.tools))")
                                         .font(.system(size: 11))
@@ -548,7 +574,6 @@ struct ModernTemplateView: View {
                                     Text("LinkedIn")
                                         .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(.black)
-                                        .underline()
                                 }
                             }
                             if !resume.github.isEmpty {
@@ -559,7 +584,6 @@ struct ModernTemplateView: View {
                                     Text("GitHub")
                                         .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(.black)
-                                        .underline()
                                 }
                             }
                         }
@@ -569,6 +593,7 @@ struct ModernTemplateView: View {
                 }
             }
             .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 LinearGradient(
                     colors: [lightAccent, Color.white],
@@ -623,8 +648,18 @@ struct ModernTemplateView: View {
                         ForEach(resume.projects) { project in
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
-                                    Text(project.name)
-                                        .font(.system(size: 15, weight: .semibold))
+                                    if project.hasValidLink {
+                                        Button {
+                                            if let url = project.url { openURL(url) }
+                                        } label: {
+                                            Text(project.name)
+                                                .font(.system(size: 15, weight: .semibold))
+                                                .foregroundColor(.black)
+                                        }
+                                    } else {
+                                        Text(project.name)
+                                            .font(.system(size: 15, weight: .semibold))
+                                    }
                                     Spacer()
                                     if !project.tools.isEmpty {
                                         Text(project.tools)

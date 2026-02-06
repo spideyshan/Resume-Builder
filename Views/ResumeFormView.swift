@@ -705,12 +705,12 @@ struct ExperienceCard: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(6)
                 
-                TextField("Duration", text: $experience.duration)
+                TextField("Jan 2023 - Present", text: $experience.duration)
                     .font(.system(size: 14))
                     .padding(10)
                     .background(Color(.systemGray6))
                     .cornerRadius(6)
-                    .frame(width: 120)
+                    .frame(width: 150)
             }
             
             VStack(alignment: .leading, spacing: 4) {
