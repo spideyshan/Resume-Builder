@@ -8,18 +8,19 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "ResumeBuilderApp",
+    name: "ResumeCraft",
     platforms: [
         .iOS("18.1")
     ],
     products: [
         .iOSApplication(
-            name: "ResumeBuilderApp",
+            name: "ResumeCraft",
             targets: ["AppModule"],
+            bundleIdentifier: "com.Shan.ResumeCraft",
             teamIdentifier: "H7YDDV2V7F",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .gift),
+            appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.indigo),
             supportedDeviceFamilies: [
                 .pad,

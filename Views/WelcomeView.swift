@@ -3,6 +3,8 @@ import SwiftUI
 struct WelcomeView: View {
     @State private var isBreathing = false
     
+    @State private var navigateToForm = false
+    
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
@@ -14,7 +16,7 @@ struct WelcomeView: View {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.primary)
                         .frame(width: 80, height: 100)
-                        .shadow(radius: 5) // Added shadow for better visibility
+                        .shadow(radius: 5)
                     
                     VStack(alignment: .leading, spacing: 6) {
                         Rectangle()
@@ -38,7 +40,6 @@ struct WelcomeView: View {
                             .frame(width: 30, height: 3)
                     }
                 }
-                // Animation removed to prevent "moving" issues
                 
                 // Title Group
                 VStack(spacing: 8) {
@@ -59,8 +60,14 @@ struct WelcomeView: View {
             Spacer().frame(height: 20)
             
             // Start button
-            NavigationLink {
-                ResumeFormView()
+            Button {
+                // 1. Trigger Haptics Explicitly
+                let generator = UIImpactFeedbackGenerator(style: .heavy)
+                generator.prepare()
+                generator.impactOccurred()
+                
+                // 2. Trigger Navigation
+                navigateToForm = true
             } label: {
                 Text("Get Started")
                     .font(.system(size: 17, weight: .semibold))
@@ -70,13 +77,11 @@ struct WelcomeView: View {
                     .background(Color.primary)
                     .cornerRadius(10)
             }
-            .simultaneousGesture(TapGesture().onEnded {
-                let generator = UIImpactFeedbackGenerator(style: .heavy)
-                generator.prepare()
-                generator.impactOccurred()
-            })
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
+            .navigationDestination(isPresented: $navigateToForm) {
+                ResumeFormView()
+            }
         }
         .navigationBarHidden(true)
     }
