@@ -72,6 +72,7 @@ struct WelcomeView: View {
             }
             .simultaneousGesture(TapGesture().onEnded {
                 let generator = UIImpactFeedbackGenerator(style: .heavy)
+                generator.prepare()
                 generator.impactOccurred()
             })
             .padding(.horizontal, 24)
