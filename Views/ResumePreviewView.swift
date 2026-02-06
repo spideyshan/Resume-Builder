@@ -39,20 +39,8 @@ struct ResumePreviewView: View {
                 .padding(.bottom, 8)
             
             // ===== CONTACT INFO =====
-            VStack(alignment: .leading, spacing: 4) {
-                let contactItems = [
-                    resume.email,
-                    resume.fullPhone,
-                    resume.location,
-                    resume.linkedin,
-                    resume.github
-                ].filter { !$0.isEmpty }
-                
-                Text(contactItems.joined(separator: "  •  "))
-                    .font(.system(size: 11))
-                    .foregroundColor(.gray)
-            }
-            .padding(.bottom, 20)
+            ContactInfoView(resume: resume, openURL: openURL)
+                .padding(.bottom, 20)
             
             // ===== EDUCATION =====
             if !resume.education.isEmpty {
@@ -442,25 +430,9 @@ struct ProjectItem: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                if project.hasValidLink {
-                    Button {
-                        if let url = project.url {
-                            openURL(url)
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(project.name)
-                                .font(.system(size: 13, weight: .semibold))
-                            Image(systemName: "arrow.up.right")
-                                .font(.system(size: 9, weight: .semibold))
-                        }
-                        .foregroundColor(.blue)
-                    }
-                } else {
-                    Text(project.name)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.black)
-                }
+                Text(project.name)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.black)
                 
                 Spacer()
                 
@@ -484,6 +456,70 @@ struct ProjectItem: View {
                     }
                 }
                 .padding(.top, 4)
+            }
+        }
+    }
+}
+
+// MARK: - Contact Info View
+
+struct ContactInfoView: View {
+    let resume: Resume
+    let openURL: OpenURLAction
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            // Basic contact items
+            let basicItems = [
+                resume.email,
+                resume.fullPhone,
+                resume.location
+            ].filter { !$0.isEmpty }
+            
+            ForEach(Array(basicItems.enumerated()), id: \.offset) { index, item in
+                Text(item)
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray)
+                
+                if index < basicItems.count - 1 || !resume.linkedin.isEmpty || !resume.github.isEmpty {
+                    Text("  •  ")
+                        .font(.system(size: 11))
+                        .foregroundColor(.gray)
+                }
+            }
+            
+            // LinkedIn (clickable)
+            if !resume.linkedin.isEmpty {
+                Button {
+                    let urlString = resume.linkedin.hasPrefix("http") ? resume.linkedin : "https://\(resume.linkedin)"
+                    if let url = URL(string: urlString) {
+                        openURL(url)
+                    }
+                } label: {
+                    Text("LinkedIn")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.blue)
+                }
+                
+                if !resume.github.isEmpty {
+                    Text("  •  ")
+                        .font(.system(size: 11))
+                        .foregroundColor(.gray)
+                }
+            }
+            
+            // GitHub (clickable)
+            if !resume.github.isEmpty {
+                Button {
+                    let urlString = resume.github.hasPrefix("http") ? resume.github : "https://\(resume.github)"
+                    if let url = URL(string: urlString) {
+                        openURL(url)
+                    }
+                } label: {
+                    Text("GitHub")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.blue)
+                }
             }
         }
     }
