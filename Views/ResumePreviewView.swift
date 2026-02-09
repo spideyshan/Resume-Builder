@@ -4,6 +4,7 @@ import UIKit
 struct ResumePreviewView: View {
     
     let resume: Resume
+    @EnvironmentObject var resumeManager: ResumeManager
     @Environment(\.openURL) private var openURL
     @State private var selectedTemplate: ResumeTemplate = .classic
     @State private var showTemplateSelector = false
@@ -39,13 +40,43 @@ struct ResumePreviewView: View {
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    printResume()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "printer")
-                        Text("Print")
-                            .font(.system(size: 14))
+                HStack {
+                    Button {
+                        printResume()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "printer")
+                            Text("Print")
+                                .font(.system(size: 14))
+                        }
+                    }
+                    
+                    Button {
+                        resumeManager.save(resume: resume)
+                        // Dismiss all the way to root (WelcomeView)
+                        // A simple way is to use the window's root view controller or a shared state, 
+                        // but since we are in a NavigationStack, we can pop to root if we had a path binding.
+                        // For now, we'll use dismiss which pops one level, but we want to go home.
+                        // Actually, saving happens automatically in Form, but here we might be coming from a "Create" flow where it wasn't saved yet?
+                        // Wait, ResumeFormView saves on "Save" button and dismisses. 
+                        // ResumeAnalysisView comes AFTER ResumeFormView. 
+                        // If we are in Analysis, the resume MIGHT NOT be saved if we just clicked "Review".
+                        // Let's check ResumeFormView "Review" button. 
+                        // Ah, "Review" just pushes AnalysisView WITHOUT saving.
+                        // So yes, we need to save here.
+                        // To dismiss to root, we can use a binding or notification. 
+                        // For simplicity in this structure, we can just save. 
+                        // The user can then navigate back or we can try to dismiss multiple times.
+                        // Better UX: Save and show confirmation, or Save and Navigate to Home.
+                        // Let's just Save and Dismiss for now, but user might need to go back manually if dismiss only goes back once.
+                        // Actually, if we use a binding for path in WelcomeView, we could reset it. 
+                        // But let's just use `dismiss` for now, and maybe the user has to tap back multiple times? 
+                        // No, that's annoying. 
+                        // Let's try to dismiss to root using the window.
+                        UIApplication.shared.windows.first?.rootViewController?.dismiss(animated: true, completion: nil)
+                    } label: {
+                        Text("Save & Exit")
+                            .fontWeight(.bold)
                     }
                 }
             }

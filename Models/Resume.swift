@@ -2,7 +2,10 @@ import Foundation
 
 // MARK: - Resume Models
 
-struct Resume {
+struct Resume: Identifiable, Codable, Equatable, Hashable {
+    var id = UUID()
+    var lastModified = Date()
+    
     // Personal Info
     var firstName: String
     var lastName: String
@@ -33,7 +36,7 @@ struct Resume {
 
 // MARK: - Education
 
-enum EducationType: String, CaseIterable, Hashable {
+enum EducationType: String, CaseIterable, Hashable, Codable {
     case classX = "Class X (10th)"
     case classXII = "Class XII (12th)"
     case diploma = "Diploma"
@@ -89,7 +92,7 @@ enum EducationType: String, CaseIterable, Hashable {
     }
 }
 
-struct Education: Identifiable, Hashable {
+struct Education: Identifiable, Hashable, Codable {
     let id = UUID()
     var type: EducationType
     var institution: String
@@ -132,7 +135,7 @@ struct Education: Identifiable, Hashable {
 
 // MARK: - Skill Category
 
-enum SkillCategory: String, CaseIterable, Hashable, Identifiable {
+enum SkillCategory: String, CaseIterable, Hashable, Identifiable, Codable {
     case frontend = "Frontend"
     case backend = "Backend"
     case database = "Database"
@@ -185,7 +188,7 @@ enum SkillCategory: String, CaseIterable, Hashable, Identifiable {
 
 // MARK: - Experience
 
-struct Experience: Identifiable, Hashable {
+struct Experience: Identifiable, Hashable, Codable {
     let id = UUID()
     var title: String
     var company: String
@@ -195,7 +198,7 @@ struct Experience: Identifiable, Hashable {
 
 // MARK: - Project
 
-struct Project: Identifiable, Hashable {
+struct Project: Identifiable, Hashable, Codable {
     let id = UUID()
     var name: String
     var link: String
@@ -217,7 +220,7 @@ struct Project: Identifiable, Hashable {
 
 // MARK: - Country Code
 
-struct CountryCode: Hashable, Identifiable {
+struct CountryCode: Hashable, Identifiable, Codable {
     let id = UUID()
     let name: String
     let code: String

@@ -1,0 +1,43 @@
+ResumeCraft - Implemented Features
+
+## Core Features
+1. **Personal Information**: 
+   - First & Last Name
+   - Contact Info (Email, Phone with Country Code Picker)
+   - Location
+   - LinkedIn Profile
+   - GitHub Profile
+
+2. **Education Section**:
+   - Categorized entries (Class X (10th), Class XII (12th), Diploma, Degree, Post Graduate)
+   - Score/Percentage/CGPA tracking
+
+3. **Skills Management**:
+   - Categorized selection interface (Frontend, Backend, Database, Mobile, DevOps, Tools, Languages, Soft Skills)
+   - Custom skill addition
+
+4. **Experience Tracking**:
+   - Job history with Title, Company, Duration
+   - Bullet point descriptions
+
+5. **Projects Portfolio**:
+   - Project names
+   - Technologies used
+   - Descriptions
+
+6. **Resume Preview & Analysis**:
+   - Real-time preview of the resume
+   - Editorial/Minimalist layout
+   - Automated analysis (completeness, action verbs, required fields)
+
+## Recent Enhancements (UI/UX)
+7. **Welcome Screen Polish**:
+   - "ResumeCraft" branding
+   - Premium Typography (Times New Roman)
+   - Subtle "Breathing" animation for the logo
+   - Haptic Feedback on interaction
+   - Full Dark Mode support
+
+8. **Stability**:
+   - Fixed layout stability
+   - Optimized navigation

@@ -14,6 +14,8 @@ struct ResumeAnalysisView: View {
         feedback.count == 1 && feedback.first?.contains("strong") == true
     }
     
+    @EnvironmentObject var resumeManager: ResumeManager
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -83,5 +85,8 @@ struct ResumeAnalysisView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Review")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            resumeManager.save(resume: resume)
+        }
     }
 }

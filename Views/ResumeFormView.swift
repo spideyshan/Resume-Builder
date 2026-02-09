@@ -1,6 +1,14 @@
 import SwiftUI
 
 struct ResumeFormView: View {
+    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var resumeManager: ResumeManager
+    
+    // Resume ID (for updates)
+    @State private var existingResumeId: UUID?
+    
+    // Resume passed in for editing
+    var existingResume: Resume?
     
     // Personal Info
     @State private var firstName = ""
@@ -27,6 +35,48 @@ struct ResumeFormView: View {
     // Experience & Projects
     @State private var experiences: [ExperienceInput] = []
     @State private var projects: [ProjectInput] = []
+    
+    // Removed custom init to fix State initialization issues
+    
+    func loadExistingResume() {
+        guard let resume = existingResume else { return }
+        
+        // Prevent reloading if already loaded (check ID match)
+        // If existingResumeId is already set, we might not want to overwrite edits
+        if existingResumeId != nil { return }
+        
+        existingResumeId = resume.id
+        firstName = resume.firstName
+        lastName = resume.lastName
+        email = resume.email
+        selectedCountryCode = resume.countryCode
+        phone = resume.phone
+        location = resume.location
+        linkedin = resume.linkedin
+        github = resume.github
+        
+        // Map models to inputs
+        educationList = resume.education.map { edu in
+            EducationInput(type: edu.type, institution: edu.institution, degree: edu.degree, field: edu.field, year: edu.year, score: edu.score)
+        }
+        
+        // Map Skills
+        var skills: [SkillCategory: Set<String>] = [:]
+        for (category, skillList) in resume.skills {
+            skills[category] = Set(skillList)
+        }
+        selectedSkills = skills
+        
+        // Map Experience
+        experiences = resume.experience.map { exp in
+            ExperienceInput(title: exp.title, company: exp.company, duration: exp.duration, bullets: exp.bullets.joined(separator: "\n"))
+        }
+        
+        // Map Projects
+        projects = resume.projects.map { proj in
+            ProjectInput(name: proj.name, link: proj.link, tools: proj.tools, bullets: proj.bullets.joined(separator: "\n"))
+        }
+    }
     
     var body: some View {
         ScrollView {
@@ -178,12 +228,25 @@ struct ResumeFormView: View {
                 .padding(.top, 8)
             }
             .padding(20)
-        }
+        } // End ScrollView
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Resume Builder")
+        .navigationTitle(existingResumeId != nil ? "Edit Resume" : "Resume Builder")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+             ToolbarItem(placement: .topBarTrailing) {
+                 Button("Save") {
+                     let resume = buildResume()
+                     resumeManager.save(resume: resume)
+                     dismiss()
+                 }
+                 .fontWeight(.bold)
+             }
+         }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerView(selectedCountry: $selectedCountryCode, isPresented: $showCountryPicker)
+        }
+        .onAppear {
+            loadExistingResume()
         }
     }
     
@@ -205,6 +268,7 @@ struct ResumeFormView: View {
         }
         
         return Resume(
+            id: existingResumeId ?? UUID(),
             firstName: firstName,
             lastName: lastName,
             email: email,
