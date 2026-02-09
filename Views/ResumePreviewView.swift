@@ -4,10 +4,13 @@ import UIKit
 struct ResumePreviewView: View {
     
     let resume: Resume
+    @Binding var path: NavigationPath
     @EnvironmentObject var resumeManager: ResumeManager
     @Environment(\.openURL) private var openURL
     @State private var selectedTemplate: ResumeTemplate = .classic
     @State private var showTemplateSelector = false
+    @State private var showShareSheet = false
+    @State private var pdfURL: URL?
     
     var body: some View {
         ScrollView {
@@ -41,39 +44,16 @@ struct ResumePreviewView: View {
             
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack {
+                    // Share Button
                     Button {
-                        printResume()
+                        exportPDF()
                     } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "printer")
-                            Text("Print")
-                                .font(.system(size: 14))
-                        }
+                        Image(systemName: "square.and.arrow.up")
                     }
                     
                     Button {
                         resumeManager.save(resume: resume)
-                        // Dismiss all the way to root (WelcomeView)
-                        // A simple way is to use the window's root view controller or a shared state, 
-                        // but since we are in a NavigationStack, we can pop to root if we had a path binding.
-                        // For now, we'll use dismiss which pops one level, but we want to go home.
-                        // Actually, saving happens automatically in Form, but here we might be coming from a "Create" flow where it wasn't saved yet?
-                        // Wait, ResumeFormView saves on "Save" button and dismisses. 
-                        // ResumeAnalysisView comes AFTER ResumeFormView. 
-                        // If we are in Analysis, the resume MIGHT NOT be saved if we just clicked "Review".
-                        // Let's check ResumeFormView "Review" button. 
-                        // Ah, "Review" just pushes AnalysisView WITHOUT saving.
-                        // So yes, we need to save here.
-                        // To dismiss to root, we can use a binding or notification. 
-                        // For simplicity in this structure, we can just save. 
-                        // The user can then navigate back or we can try to dismiss multiple times.
-                        // Better UX: Save and show confirmation, or Save and Navigate to Home.
-                        // Let's just Save and Dismiss for now, but user might need to go back manually if dismiss only goes back once.
-                        // Actually, if we use a binding for path in WelcomeView, we could reset it. 
-                        // But let's just use `dismiss` for now, and maybe the user has to tap back multiple times? 
-                        // No, that's annoying. 
-                        // Let's try to dismiss to root using the window.
-                        UIApplication.shared.windows.first?.rootViewController?.dismiss(animated: true, completion: nil)
+                        path = NavigationPath() // Pop to Root
                     } label: {
                         Text("Save & Exit")
                             .fontWeight(.bold)
@@ -84,9 +64,14 @@ struct ResumePreviewView: View {
         .sheet(isPresented: $showTemplateSelector) {
             TemplateSelectionView(selectedTemplate: $selectedTemplate)
         }
+        .sheet(isPresented: $showShareSheet, content: {
+            if let url = pdfURL {
+                ShareSheet(activityItems: [url])
+            }
+        })
     }
     
-    func printResume() {
+    func exportPDF() {
         let printContent: AnyView
         switch selectedTemplate {
         case .classic:
@@ -101,27 +86,37 @@ struct ResumePreviewView: View {
         hostingController.view.frame = CGRect(x: 0, y: 0, width: 612, height: 792)
         hostingController.view.backgroundColor = .white
         
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 612, height: 792))
-        window.rootViewController = hostingController
-        window.makeKeyAndVisible()
-        hostingController.view.layoutIfNeeded()
-        
         let pdfRenderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
         let pdfData = pdfRenderer.pdfData { context in
             context.beginPage()
             hostingController.view.layer.render(in: context.cgContext)
         }
         
-        let printInfo = UIPrintInfo(dictionary: nil)
-        printInfo.jobName = "\(resume.fullName.isEmpty ? "Resume" : resume.fullName)"
-        printInfo.outputType = .general
+        // Generate Custom Filename
+        let safeName = resume.fullName.replacingOccurrences(of: " ", with: "_")
+        let filename = safeName.isEmpty ? "Resume.pdf" : "\(safeName)_Resume.pdf"
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         
-        let printController = UIPrintInteractionController.shared
-        printController.printInfo = printInfo
-        printController.printingItem = pdfData
-        
-        printController.present(animated: true) { _, _, _ in }
+        do {
+            try pdfData.write(to: url)
+            self.pdfURL = url
+            self.showShareSheet = true
+        } catch {
+            print("Could not save PDF: \(error)")
+        }
     }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    var activityItems: [Any]
+    var applicationActivities: [UIActivity]? = nil
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Classic Template (Professional with accent color)

@@ -4,9 +4,11 @@ struct ResumeAnalysisView: View {
     
     let resume: Resume
     let feedback: [String]
+    @Binding var path: NavigationPath
     
-    init(resume: Resume) {
+    init(resume: Resume, path: Binding<NavigationPath>) {
         self.resume = resume
+        self._path = path
         self.feedback = ResumeAnalyzer.analyze(resume: resume)
     }
     
@@ -65,7 +67,7 @@ struct ResumeAnalysisView: View {
                 
                 // Preview Button
                 NavigationLink {
-                    ResumePreviewView(resume: resume)
+                    ResumePreviewView(resume: resume, path: $path)
                 } label: {
                     HStack {
                         Text("View Resume")

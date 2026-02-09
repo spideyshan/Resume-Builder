@@ -4,6 +4,8 @@ struct ResumeFormView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var resumeManager: ResumeManager
     
+    @Binding var path: NavigationPath
+    
     // Resume ID (for updates)
     @State private var existingResumeId: UUID?
     
@@ -211,7 +213,7 @@ struct ResumeFormView: View {
                 // Review Button
                 NavigationLink {
                     let resume = buildResume()
-                    ResumeAnalysisView(resume: resume)
+                    ResumeAnalysisView(resume: resume, path: $path)
                 } label: {
                     HStack {
                         Text("Review Resume")

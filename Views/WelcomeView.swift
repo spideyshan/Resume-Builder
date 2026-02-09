@@ -3,10 +3,10 @@ import SwiftUI
 struct WelcomeView: View {
     @EnvironmentObject var resumeManager: ResumeManager
     @State private var showingResumeForm = false
-
+    @State private var path = NavigationPath()
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: 8) {
@@ -75,10 +75,10 @@ struct WelcomeView: View {
                 .padding()
             }
             .navigationDestination(isPresented: $showingResumeForm) {
-                ResumeFormView(existingResume: nil)
+                ResumeFormView(path: $path, existingResume: nil)
             }
             .navigationDestination(for: Resume.self) { resume in
-                ResumeFormView(existingResume: resume)
+                ResumeFormView(path: $path, existingResume: resume)
             }
         }
         .onAppear {
