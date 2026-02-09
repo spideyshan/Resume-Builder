@@ -12,6 +12,9 @@ struct ResumeFormView: View {
     // Resume passed in for editing
     var existingResume: Resume?
     
+    // Resume Title
+    @State private var title = ""
+    
     // Personal Info
     @State private var firstName = ""
     @State private var lastName = ""
@@ -24,6 +27,7 @@ struct ResumeFormView: View {
     @State private var linkedin = ""
     @State private var github = ""
     @State private var showCountryPicker = false
+    @State private var showSaveError = false
     
     // Education
     @State private var educationList: [EducationInput] = []
@@ -41,193 +45,61 @@ struct ResumeFormView: View {
     // Removed custom init to fix State initialization issues
     
     func loadExistingResume() {
-        guard let resume = existingResume else { return }
-        
-        // Prevent reloading if already loaded (check ID match)
-        // If existingResumeId is already set, we might not want to overwrite edits
-        if existingResumeId != nil { return }
-        
-        existingResumeId = resume.id
-        firstName = resume.firstName
-        lastName = resume.lastName
-        email = resume.email
-        selectedCountryCode = resume.countryCode
-        phone = resume.phone
-        location = resume.location
-        linkedin = resume.linkedin
-        github = resume.github
-        
-        // Map models to inputs
-        educationList = resume.education.map { edu in
-            EducationInput(type: edu.type, institution: edu.institution, degree: edu.degree, field: edu.field, year: edu.year, score: edu.score)
-        }
-        
-        // Map Skills
-        var skills: [SkillCategory: Set<String>] = [:]
-        for (category, skillList) in resume.skills {
-            skills[category] = Set(skillList)
-        }
-        selectedSkills = skills
-        
-        // Map Experience
-        experiences = resume.experience.map { exp in
-            ExperienceInput(title: exp.title, company: exp.company, duration: exp.duration, bullets: exp.bullets.joined(separator: "\n"))
-        }
-        
-        // Map Projects
-        projects = resume.projects.map { proj in
-            ProjectInput(name: proj.name, link: proj.link, tools: proj.tools, bullets: proj.bullets.joined(separator: "\n"))
+        if let resume = existingResume {
+            // Prevent reloading if already loaded
+            if existingResumeId != nil { return }
+            
+            existingResumeId = resume.id
+            title = resume.title ?? ""
+            firstName = resume.firstName
+            lastName = resume.lastName
+            email = resume.email
+            selectedCountryCode = resume.countryCode
+            phone = resume.phone
+            location = resume.location
+            linkedin = resume.linkedin
+            github = resume.github
+            
+            // Map models to inputs
+            educationList = resume.education.map { edu in
+                EducationInput(type: edu.type, institution: edu.institution, degree: edu.degree, field: edu.field, year: edu.year, score: edu.score)
+            }
+            
+            // Map Skills
+            var skills: [SkillCategory: Set<String>] = [:]
+            for (category, skillList) in resume.skills {
+                skills[category] = Set(skillList)
+            }
+            selectedSkills = skills
+            
+            // Map Experience
+            experiences = resume.experience.map { exp in
+                ExperienceInput(title: exp.title, company: exp.company, duration: exp.duration, bullets: exp.bullets.joined(separator: "\n"))
+            }
+            
+            // Map Projects
+            projects = resume.projects.map { proj in
+                ProjectInput(name: proj.name, link: proj.link, tools: proj.tools, bullets: proj.bullets.joined(separator: "\n"))
+            }
+        } else {
+            // New Resume - Generate ID once so it persists across saves
+            if existingResumeId == nil {
+                existingResumeId = UUID()
+            }
         }
     }
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
-                
-                // 01 - Personal Info
-                FormSection(number: "01", title: "Personal Information") {
-                    HStack(spacing: 12) {
-                        SimpleField(label: "FIRST NAME", placeholder: "John", text: $firstName)
-                        SimpleField(label: "LAST NAME", placeholder: "Doe", text: $lastName)
-                    }
-                }
-                
-                // 02 - Contact
-                FormSection(number: "02", title: "Contact Information") {
-                    SimpleField(label: "EMAIL", placeholder: "john@email.com", text: $email)
-                    
-                    // Phone with country code
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("PHONE")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .tracking(0.5)
-                        
-                        HStack(spacing: 8) {
-                            Button {
-                                showCountryPicker = true
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Text(selectedCountryCode.flag)
-                                        .font(.system(size: 20))
-                                    Text(selectedCountryCode.dialCode)
-                                        .font(.system(size: 15))
-                                        .foregroundColor(.primary)
-                                    Image(systemName: "chevron.down")
-                                        .font(.system(size: 10, weight: .semibold))
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 12)
-                                .background(Color(.systemGray5))
-                                .cornerRadius(8)
-                            }
-                            
-                            TextField("1234567890", text: $phone)
-                                .font(.system(size: 16))
-                                .keyboardType(.phonePad)
-                                .padding(12)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
-                        }
-                    }
-                    
-                    SimpleField(label: "LOCATION", placeholder: "New York, NY", text: $location)
-                    SimpleField(label: "LINKEDIN", placeholder: "linkedin.com/in/johndoe", text: $linkedin)
-                    SimpleField(label: "GITHUB", placeholder: "github.com/johndoe", text: $github)
-                }
-                
-                // 03 - Education
-                FormSection(number: "03", title: "Education") {
-                    VStack(spacing: 14) {
-                        ForEach($educationList) { $edu in
-                            EducationCard(education: $edu) {
-                                educationList.removeAll { $0.id == edu.id }
-                            }
-                        }
-                        
-                        // Add Education Button with Type Selection
-                        Menu {
-                            ForEach(EducationType.allCases, id: \.self) { type in
-                                Button {
-                                    educationList.append(EducationInput(type: type))
-                                } label: {
-                                    Label(type.rawValue, systemImage: educationIcon(for: type))
-                                }
-                            }
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 13, weight: .semibold))
-                                Text("Add Education")
-                                    .font(.system(size: 14, weight: .medium))
-                            }
-                            .foregroundColor(.primary)
-                            .padding(.vertical, 12)
-                            .frame(maxWidth: .infinity)
-                            .background(Color(.systemGray5))
-                            .cornerRadius(8)
-                        }
-                    }
-                }
-                
-                // 04 - Skills
-                FormSection(number: "04", title: "Skills") {
-                    SkillsSelectorView(
-                        selectedSkills: $selectedSkills,
-                        customSkillText: $customSkillText,
-                        selectedCategory: $selectedCategory
-                    )
-                }
-                
-                // 05 - Experience
-                FormSection(number: "05", title: "Experience") {
-                    VStack(spacing: 14) {
-                        ForEach($experiences) { $exp in
-                            ExperienceCard(experience: $exp) {
-                                experiences.removeAll { $0.id == exp.id }
-                            }
-                        }
-                        
-                        AddButton(text: "Add Experience") {
-                            experiences.append(ExperienceInput())
-                        }
-                    }
-                }
-                
-                // 06 - Projects
-                FormSection(number: "06", title: "Projects") {
-                    VStack(spacing: 14) {
-                        ForEach($projects) { $proj in
-                            ProjectCard(project: $proj) {
-                                projects.removeAll { $0.id == proj.id }
-                            }
-                        }
-                        
-                        AddButton(text: "Add Project") {
-                            projects.append(ProjectInput())
-                        }
-                    }
-                }
-                
-                // Review Button
-                NavigationLink {
-                    let resume = buildResume()
-                    ResumeAnalysisView(resume: resume, path: $path)
-                } label: {
-                    HStack {
-                        Text("Review Resume")
-                            .font(.system(size: 17, weight: .semibold))
-                        Spacer()
-                        Image(systemName: "arrow.right")
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .background(Color.black)
-                    .cornerRadius(10)
-                }
-                .padding(.top, 8)
+                resumeTitleSection
+                personalInfoSection
+                contactSection
+                educationSection
+                skillsSection
+                experienceSection
+                projectsSection
+                reviewButton
             }
             .padding(20)
         } // End ScrollView
@@ -238,12 +110,21 @@ struct ResumeFormView: View {
              ToolbarItem(placement: .topBarTrailing) {
                  Button("Save") {
                      let resume = buildResume()
-                     resumeManager.save(resume: resume)
-                     dismiss()
+                     print("Attempting to save resume: \(resume.title ?? "Untitled")")
+                     if resumeManager.save(resume: resume) {
+                         dismiss()
+                     } else {
+                         showSaveError = true
+                     }
                  }
                  .fontWeight(.bold)
              }
-         }
+        }
+        .alert("Save Failed", isPresented: $showSaveError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("There was an error saving your resume. Please try again.")
+        }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerView(selectedCountry: $selectedCountryCode, isPresented: $showCountryPicker)
         }
@@ -252,13 +133,176 @@ struct ResumeFormView: View {
         }
     }
     
-    func educationIcon(for type: EducationType) -> String {
-        switch type {
-        case .classX, .classXII: return "building.columns"
-        case .diploma: return "scroll"
-        case .degree: return "graduationcap"
-        case .postgraduate: return "book.closed"
+    // MARK: - View Sections
+
+    var resumeTitleSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("RESUME TITLE (Optional)")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(.secondary)
+                .tracking(0.5)
+            
+            TextField("e.g. Software Engineer Resume", text: $title)
+                .font(.system(size: 16, weight: .medium))
+                .padding(12)
+                .background(Color(.systemBackground))
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color(.systemGray4), lineWidth: 1)
+                )
         }
+        .padding(.bottom, 10)
+    }
+
+    var personalInfoSection: some View {
+        FormSection(number: "01", title: "Personal Information") {
+            HStack(spacing: 12) {
+                SimpleField(label: "FIRST NAME", placeholder: "John", text: $firstName)
+                SimpleField(label: "LAST NAME", placeholder: "Doe", text: $lastName)
+            }
+        }
+    }
+
+    var contactSection: some View {
+        FormSection(number: "02", title: "Contact Information") {
+            SimpleField(label: "EMAIL", placeholder: "john@email.com", text: $email)
+            
+            // Phone with country code
+            VStack(alignment: .leading, spacing: 6) {
+                Text("PHONE")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .tracking(0.5)
+                
+                HStack(spacing: 8) {
+                    Button {
+                        showCountryPicker = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(selectedCountryCode.flag)
+                                .font(.system(size: 20))
+                            Text(selectedCountryCode.dialCode)
+                                .font(.system(size: 15))
+                                .foregroundColor(.primary)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color(.systemGray5))
+                        .cornerRadius(8)
+                    }
+                    
+                    TextField("1234567890", text: $phone)
+                        .font(.system(size: 16))
+                        .keyboardType(.phonePad)
+                        .padding(12)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                }
+            }
+            
+            SimpleField(label: "LOCATION", placeholder: "New York, NY", text: $location)
+            SimpleField(label: "LINKEDIN", placeholder: "linkedin.com/in/johndoe", text: $linkedin)
+            SimpleField(label: "GITHUB", placeholder: "github.com/johndoe", text: $github)
+        }
+    }
+
+    var educationSection: some View {
+        FormSection(number: "03", title: "Education") {
+            VStack(spacing: 14) {
+                ForEach($educationList) { $edu in
+                    EducationCard(education: $edu) {
+                        educationList.removeAll { $0.id == edu.id }
+                    }
+                }
+                
+                // Add Education Button with Type Selection
+                Menu {
+                    ForEach(EducationType.allCases, id: \.self) { type in
+                        Button {
+                            educationList.append(EducationInput(type: type))
+                        } label: {
+                            Label(type.rawValue, systemImage: educationIcon(for: type))
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.primary)
+                            .padding(.vertical, 12)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(.systemGray5))
+                            .cornerRadius(8)
+                    }
+                }
+            }
+        }
+    }
+
+    var skillsSection: some View {
+        FormSection(number: "04", title: "Skills") {
+            SkillsSelectorView(
+                selectedSkills: $selectedSkills,
+                customSkillText: $customSkillText,
+                selectedCategory: $selectedCategory
+            )
+        }
+    }
+
+    var experienceSection: some View {
+        FormSection(number: "05", title: "Experience") {
+            VStack(spacing: 14) {
+                ForEach($experiences) { $exp in
+                    ExperienceCard(experience: $exp) {
+                        experiences.removeAll { $0.id == exp.id }
+                    }
+                }
+                
+                AddButton(text: "Add Experience") {
+                    experiences.append(ExperienceInput())
+                }
+            }
+        }
+    }
+
+    var projectsSection: some View {
+        FormSection(number: "06", title: "Projects") {
+            VStack(spacing: 14) {
+                ForEach($projects) { $proj in
+                    ProjectCard(project: $proj) {
+                        projects.removeAll { $0.id == proj.id }
+                    }
+                }
+                
+                AddButton(text: "Add Project") {
+                    projects.append(ProjectInput())
+                }
+            }
+        }
+    }
+
+    var reviewButton: some View {
+        NavigationLink {
+            let resume = buildResume()
+            ResumeAnalysisView(resume: resume, path: $path)
+        } label: {
+            HStack {
+                Text("Review Resume")
+                    .font(.system(size: 17, weight: .semibold))
+                Spacer()
+                Image(systemName: "arrow.right")
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(Color.black)
+            .cornerRadius(10)
+        }
+        .padding(.top, 8)
     }
     
     func buildResume() -> Resume {
@@ -271,6 +315,7 @@ struct ResumeFormView: View {
         
         return Resume(
             id: existingResumeId ?? UUID(),
+            title: title,
             firstName: firstName,
             lastName: lastName,
             email: email,
@@ -311,9 +356,16 @@ struct ResumeFormView: View {
             }
         )
     }
-}
 
-// MARK: - Education Card (Updated)
+    func educationIcon(for type: EducationType) -> String {
+        switch type {
+        case .classX, .classXII: return "building.columns"
+        case .diploma: return "scroll"
+        case .degree: return "graduationcap"
+        case .postgraduate: return "book.closed"
+        }
+    }
+}
 
 struct EducationCard: View {
     @Binding var education: EducationInput
@@ -335,8 +387,8 @@ struct EducationCard: View {
                 
                 Button(action: onDelete) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.secondary)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.secondary)
                 }
             }
             
@@ -413,8 +465,6 @@ struct EducationCard: View {
         }
     }
 }
-
-// MARK: - Skills Selector
 
 struct SkillsSelectorView: View {
     @Binding var selectedSkills: [SkillCategory: Set<String>]
@@ -644,8 +694,6 @@ struct CustomSkillInput: View {
     }
 }
 
-// MARK: - Country Picker
-
 struct CountryPickerView: View {
     @Binding var selectedCountry: CountryCode
     @Binding var isPresented: Bool
@@ -709,8 +757,6 @@ struct CountryPickerView: View {
     }
 }
 
-// MARK: - Input Models
-
 struct EducationInput: Identifiable {
     let id = UUID()
     var type: EducationType = .degree
@@ -736,8 +782,6 @@ struct ProjectInput: Identifiable {
     var tools = ""
     var bullets = ""
 }
-
-// MARK: - Cards
 
 struct ExperienceCard: View {
     @Binding var experience: ExperienceInput
@@ -873,8 +917,6 @@ struct ProjectCard: View {
         )
     }
 }
-
-// MARK: - Components
 
 struct FormSection<Content: View>: View {
     let number: String

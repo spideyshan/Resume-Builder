@@ -31,12 +31,17 @@ struct WelcomeView: View {
                                 NavigationLink(value: resume) {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 4) {
-                                            Text(resume.fullName.isEmpty ? "Untitled Resume" : resume.fullName)
+                                            Text((resume.title ?? "").isEmpty ? (resume.fullName.isEmpty ? "Untitled Resume" : resume.fullName) : resume.title!)
                                                 .font(.headline)
-                                                .foregroundStyle(.primary)
+                                                .foregroundColor(.primary)
+                                            if !(resume.title ?? "").isEmpty && !resume.fullName.isEmpty {
+                                                Text(resume.fullName)
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.secondary)
+                                            }
                                             Text("Last modified: " + resume.lastModified.formatted(date: .abbreviated, time: .shortened))
                                                 .font(.caption)
-                                                .foregroundStyle(.secondary)
+                                                .foregroundColor(.secondary)
                                         }
                                         Spacer()
                                         Image(systemName: "chevron.right")

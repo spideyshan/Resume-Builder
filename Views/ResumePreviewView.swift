@@ -11,6 +11,7 @@ struct ResumePreviewView: View {
     @State private var showTemplateSelector = false
     @State private var showShareSheet = false
     @State private var pdfURL: URL?
+    @State private var showSaveError = false
     
     var body: some View {
         ScrollView {
@@ -52,8 +53,11 @@ struct ResumePreviewView: View {
                     }
                     
                     Button {
-                        resumeManager.save(resume: resume)
-                        path = NavigationPath() // Pop to Root
+                        if resumeManager.save(resume: resume) {
+                            path = NavigationPath() // Pop to Root
+                        } else {
+                            showSaveError = true
+                        }
                     } label: {
                         Text("Save & Exit")
                             .fontWeight(.bold)
@@ -69,8 +73,14 @@ struct ResumePreviewView: View {
                 ShareSheet(activityItems: [url])
             }
         })
+        .alert("Save Failed", isPresented: $showSaveError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("There was an error saving your resume. Please try again.")
+        }
     }
     
+    @MainActor
     func exportPDF() {
         let printContent: AnyView
         switch selectedTemplate {
@@ -82,28 +92,32 @@ struct ResumePreviewView: View {
             printContent = AnyView(ModernPrintView(resume: resume))
         }
         
-        let hostingController = UIHostingController(rootView: printContent)
-        hostingController.view.frame = CGRect(x: 0, y: 0, width: 612, height: 792)
-        hostingController.view.backgroundColor = .white
-        
-        let pdfRenderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
-        let pdfData = pdfRenderer.pdfData { context in
-            context.beginPage()
-            hostingController.view.layer.render(in: context.cgContext)
-        }
+        let renderer = ImageRenderer(content: printContent)
+        let paperSize = CGSize(width: 612, height: 792)
+        renderer.proposedSize = ProposedViewSize(paperSize)
+        renderer.scale = 1.0
         
         // Generate Custom Filename
-        let safeName = resume.fullName.replacingOccurrences(of: " ", with: "_")
-        let filename = safeName.isEmpty ? "Resume.pdf" : "\(safeName)_Resume.pdf"
+        let baseName = (resume.title ?? "").isEmpty ? resume.fullName : resume.title!
+        let safeName = baseName.replacingOccurrences(of: " ", with: "_")
+        let filename = safeName.isEmpty ? "Resume.pdf" : "\(safeName).pdf"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         
-        do {
-            try pdfData.write(to: url)
-            self.pdfURL = url
-            self.showShareSheet = true
-        } catch {
-            print("Could not save PDF: \(error)")
+        renderer.render { size, context in
+            var box = CGRect(origin: .zero, size: paperSize)
+            
+            guard let pdf = CGContext(url as CFURL, mediaBox: &box, nil) else {
+                return
+            }
+            
+            pdf.beginPDFPage(nil)
+            context(pdf)
+            pdf.endPDFPage()
+            pdf.closePDF()
         }
+        
+        self.pdfURL = url
+        self.showShareSheet = true
     }
 }
 

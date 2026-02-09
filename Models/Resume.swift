@@ -5,6 +5,7 @@ import Foundation
 struct Resume: Identifiable, Codable, Equatable, Hashable {
     var id = UUID()
     var lastModified = Date()
+    var title: String? // Optional title for the resume
     
     // Personal Info
     var firstName: String

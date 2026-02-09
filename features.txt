@@ -30,14 +30,33 @@ ResumeCraft - Implemented Features
    - Editorial/Minimalist layout
    - Automated analysis (completeness, action verbs, required fields)
 
-## Recent Enhancements (UI/UX)
-7. **Welcome Screen Polish**:
-   - "ResumeCraft" branding
-   - Premium Typography (Times New Roman)
-   - Subtle "Breathing" animation for the logo
-   - Haptic Feedback on interaction
-   - Full Dark Mode support
+## Recent Enhancements (Persistence & UI)
+7. **Persistence & History**:
+   - Local storage of resumes using JSON format.
+   - "My Resumes" dashboard on the Welcome screen.
+   - Edit previously saved resumes with all fields preserved.
+   - Swipe-to-delete functionality for easy management.
 
-8. **Stability**:
-   - Fixed layout stability
-   - Optimized navigation
+8. **Resume Renaming**:
+   - Optional custom titles for each resume (e.g., "Software Engineer 2024").
+   - Titles are displayed in the history list for easy identification.
+
+9. **PDF Export & Sharing**:
+   - Professional PDF generation using Apple's modern ImageRenderer.
+   - Support for off-screen rendering (fixes empty PDF bug).
+   - Custom filenames based on Resume Title.
+
+10. **System Stability**:
+    - Modular View Architecture (Resolved "Expression too complex" compiler errors).
+    - Data Consistency: Fixed immutable property crashes and duplicate file creation.
+    - Backward Compatibility: Gracefully handles older resume files without titles.
+
+11. **Welcome Screen Polish**:
+    - "ResumeCraft" branding
+    - Premium Typography (Times New Roman)
+    - Subtle "Breathing" animation for the logo
+    - Haptic Feedback on interaction
+    - Full Dark Mode support
+
+## Scripts
+- `push_to_github.sh`: Helper script to automate git commands in iCloud environments.

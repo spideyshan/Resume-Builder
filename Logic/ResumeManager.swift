@@ -15,12 +15,10 @@ class ResumeManager: ObservableObject {
     }
     
     // MARK: - Save
-    func save(resume: Resume) {
+    @discardableResult
+    func save(resume: Resume) -> Bool {
         var resumeToSave = resume
         resumeToSave.lastModified = Date() // Update timestamp
-        
-        // If ID is missing (shouldn't happen with new struct), generate one
-        // UUID is constant in the struct, so we rely on the struct update to persist changes
         
         let filename = "\(resumeToSave.id.uuidString).json"
         let fileURL = documentsDirectory.appendingPathComponent(filename)
@@ -31,8 +29,10 @@ class ResumeManager: ObservableObject {
             // Refresh list
             loadResumes()
             print("Successfully saved resume: \(resumeToSave.fullName)")
+            return true
         } catch {
             print("Failed to save resume: \(error.localizedDescription)")
+            return false
         }
     }
     
@@ -45,9 +45,13 @@ class ResumeManager: ObservableObject {
             
             for fileURL in fileURLs {
                 if fileURL.pathExtension == "json" {
-                    let data = try Data(contentsOf: fileURL)
-                    let resume = try JSONDecoder().decode(Resume.self, from: data)
-                    loadedResumes.append(resume)
+                    do {
+                        let data = try Data(contentsOf: fileURL)
+                        let resume = try JSONDecoder().decode(Resume.self, from: data)
+                        loadedResumes.append(resume)
+                    } catch {
+                        print("Failed to decode resume at \(fileURL.lastPathComponent): \(error.localizedDescription)")
+                    }
                 }
             }
             
@@ -57,7 +61,7 @@ class ResumeManager: ObservableObject {
             }
             
         } catch {
-            print("Failed to load resumes: \(error.localizedDescription)")
+            print("Failed to list directory: \(error.localizedDescription)")
         }
     }
     
