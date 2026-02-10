@@ -16,6 +16,16 @@ struct ResumeAnalysisView: View {
         feedback.count == 1 && feedback.first?.contains("strong") == true
     }
     
+    var atsScore: Int {
+        ResumeAnalyzer.calculateATSScore(resume: resume)
+    }
+    
+    var scoreColor: Color {
+        if atsScore >= 80 { return .green }
+        else if atsScore >= 50 { return .orange }
+        else { return .red }
+    }
+    
     @EnvironmentObject var resumeManager: ResumeManager
     
     var body: some View {
@@ -24,9 +34,28 @@ struct ResumeAnalysisView: View {
                 
                 // Status
                 VStack(spacing: 12) {
-                    Image(systemName: isComplete ? "checkmark.circle" : "exclamationmark.circle")
-                        .font(.system(size: 44, weight: .light))
-                        .foregroundColor(isComplete ? .green : .orange)
+                    ZStack {
+                        Circle()
+                            .stroke(lineWidth: 10)
+                            .opacity(0.3)
+                            .foregroundColor(scoreColor)
+                        
+                        Circle()
+                            .trim(from: 0.0, to: CGFloat(atsScore) / 100.0)
+                            .stroke(style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+                            .foregroundColor(scoreColor)
+                            .rotationEffect(Angle(degrees: 270.0))
+                            .animation(.linear, value: atsScore)
+
+                        VStack {
+                            Text("\(atsScore)")
+                                .font(.system(size: 40, weight: .bold))
+                            Text("ATS Score")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .frame(width: 120, height: 120)
                     
                     Text(isComplete ? "Ready to go!" : "Review needed")
                         .font(.system(size: 20, weight: .semibold))

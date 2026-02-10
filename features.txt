@@ -60,3 +60,9 @@ ResumeCraft - Implemented Features
 
 ## Scripts
 - `push_to_github.sh`: Helper script to automate git commands in iCloud environments.
+
+## AI & Smart Features (New)
+12. **ATS Optimization**:
+    - **Real-time Scoring**: Calculates an ATS Score (0-100) based on content depth, keywords, and structural completeness.
+    - **Smart Analysis**: Uses Apple's **NaturalLanguage** framework to analyze tone and keyword usage.
+    - **Actionable Feedback**: Suggests specific improvements like adding strong action verbs, expanding bullet points, and including essential links (LinkedIn/GitHub).
