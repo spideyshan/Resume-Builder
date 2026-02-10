@@ -2,23 +2,40 @@ import SwiftUI
 
 struct WelcomeView: View {
     @EnvironmentObject var resumeManager: ResumeManager
+    @AppStorage("isDarkMode") private var isDarkMode = false
     @State private var showingResumeForm = false
     @State private var path = NavigationPath()
     
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 0) {
-                // Header
+                // Top Header Section
+                HStack(alignment: .top) {
+                    Spacer()
+                    // Adaptive Dark Mode Toggle
+                    Button {
+                        isDarkMode.toggle()
+                    } label: {
+                        Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(isDarkMode ? .yellow : .blue)
+                            .padding(10)
+                            .background(Circle().fill(isDarkMode ? Color.white.opacity(0.1) : Color.black.opacity(0.05)))
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                
+                // Centered App Name and Tagline
                 VStack(spacing: 8) {
                     Text("ResumeCraft")
-                        .font(.custom("Times New Roman", size: 32).weight(.bold))
-                        .padding(.top, 20)
+                        .font(.custom("Times New Roman", size: 36).weight(.bold))
                     
                     Text("Professional resumes in minutes")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-                .padding(.bottom, 30)
+                .padding(.bottom, 20)
                 
                 if resumeManager.savedResumes.isEmpty {
                     // Empty State
@@ -68,14 +85,15 @@ struct WelcomeView: View {
                         Text("Create New Resume")
                     }
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(isDarkMode ? .black : .white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.black)
+                    .background(isDarkMode ? Color.white : Color.black)
                     .cornerRadius(12)
                 }
                 .padding()
             }
+            .navigationBarHidden(true)
             .navigationDestination(isPresented: $showingResumeForm) {
                 ResumeFormView(path: $path, existingResume: nil)
             }
