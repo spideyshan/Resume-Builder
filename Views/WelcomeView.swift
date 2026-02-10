@@ -44,9 +44,6 @@ struct WelcomeView: View {
                                                 .foregroundColor(.secondary)
                                         }
                                         Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption)
-                                            .foregroundStyle(.tertiary)
                                     }
                                     .padding(.vertical, 4)
                                 }
