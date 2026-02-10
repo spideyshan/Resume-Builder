@@ -1,10 +1,15 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct WelcomeView: View {
     @EnvironmentObject var resumeManager: ResumeManager
     @AppStorage("isDarkMode") private var isDarkMode = false
     @State private var showingResumeForm = false
     @State private var path = NavigationPath()
+    
+    // Import State
+    @State private var isImporting = false
+    @State private var importedResume: Resume? // Use this to trigger navigation if needed, or just pass to form
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -17,10 +22,10 @@ struct WelcomeView: View {
                         isDarkMode.toggle()
                     } label: {
                         Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(isDarkMode ? .yellow : .blue)
-                            .padding(10)
-                            .background(Circle().fill(isDarkMode ? Color.white.opacity(0.1) : Color.black.opacity(0.05)))
+                        .font(.system(size: 20))
+                        .foregroundColor(isDarkMode ? .yellow : .blue)
+                        .padding(10)
+                        .background(Circle().fill(isDarkMode ? Color.white.opacity(0.1) : Color.black.opacity(0.05)))
                     }
                 }
                 .padding(.horizontal)
@@ -76,29 +81,76 @@ struct WelcomeView: View {
                 
                 Spacer()
                 
-                // Create New Button
-                Button {
-                    showingResumeForm = true
-                } label: {
-                    HStack {
-                        Image(systemName: "plus")
-                        Text("Create New Resume")
+                // Action Buttons
+                VStack(spacing: 12) {
+                    // Create New Button
+                    Button {
+                        showingResumeForm = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus")
+                            Text("Create New Resume")
+                        }
+                        .font(.headline)
+                        .foregroundStyle(isDarkMode ? .black : .white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(isDarkMode ? Color.white : Color.black)
+                        .cornerRadius(12)
                     }
-                    .font(.headline)
-                    .foregroundStyle(isDarkMode ? .black : .white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(isDarkMode ? Color.white : Color.black)
-                    .cornerRadius(12)
+                    
+                    // Import Resume Button
+                    Button {
+                        isImporting = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "square.and.arrow.down")
+                            Text("Import from PDF/Image")
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                    }
+                    .padding(.bottom, 5)
                 }
                 .padding()
             }
             .navigationBarHidden(true)
             .navigationDestination(isPresented: $showingResumeForm) {
-                ResumeFormView(path: $path, existingResume: nil)
+                // Determine if we are passing an imported resume or nil
+                if let resume = importedResume {
+                    ResumeFormView(path: $path, existingResume: resume)
+                        .onDisappear { importedResume = nil } // Reset after use
+                } else {
+                    ResumeFormView(path: $path, existingResume: nil)
+                }
             }
             .navigationDestination(for: Resume.self) { resume in
                 ResumeFormView(path: $path, existingResume: resume)
+            }
+            .fileImporter(
+                isPresented: $isImporting,
+                allowedContentTypes: [UTType.pdf, UTType.image],
+                allowsMultipleSelection: false
+            ) { result in
+                switch result {
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+                    // Start accessing security scoped resource
+                    guard url.startAccessingSecurityScopedResource() else { return }
+                    
+                    defer { url.stopAccessingSecurityScopedResource() }
+                    
+                    Task {
+                        let parsedResume = await ResumeParser.parse(url: url)
+                        await MainActor.run {
+                            self.importedResume = parsedResume
+                            self.showingResumeForm = true
+                        }
+                    }
+                    
+                case .failure(let error):
+                    print("Import failed: \(error.localizedDescription)")
+                }
             }
         }
         .onAppear {

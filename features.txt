@@ -66,3 +66,8 @@ ResumeCraft - Implemented Features
     - **Real-time Scoring**: Calculates an ATS Score (0-100) based on content depth, keywords, and structural completeness.
     - **Smart Analysis**: Uses Apple's **NaturalLanguage** framework to analyze tone and keyword usage.
     - **Actionable Feedback**: Suggests specific improvements like adding strong action verbs, expanding bullet points, and including essential links (LinkedIn/GitHub).
+
+13. **Resume Parsing (Import)**:
+    - **One-Click Import**: Automatically fill the resume form by uploading a PDF or Image.
+    - **On-Device OCR**: Uses Apple's **Vision Framework** to scan text securely on the device.
+    - **Smart Mapping**: Automatically detects Name, Email, Phone, LinkedIn, and sections like Experience/Education.

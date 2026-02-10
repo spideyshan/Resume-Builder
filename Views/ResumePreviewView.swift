@@ -10,7 +10,7 @@ struct ResumePreviewView: View {
     @State private var selectedTemplate: ResumeTemplate = .classic
     @State private var showTemplateSelector = false
     @State private var showShareSheet = false
-    @State private var pdfURL: URL?
+    @State private var generatedPDFUrl: URL?
     @State private var showSaveError = false
     
     var body: some View {
@@ -45,11 +45,14 @@ struct ResumePreviewView: View {
             
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack {
-                    // Share Button
-                    Button {
-                        exportPDF()
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
+                    // Share Link (Native)
+                    if let url = generatedPDFUrl {
+                        ShareLink(item: url) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    } else {
+                        ProgressView()
+                            .scaleEffect(0.7)
                     }
                     
                     Button {
@@ -68,20 +71,26 @@ struct ResumePreviewView: View {
         .sheet(isPresented: $showTemplateSelector) {
             TemplateSelectionView(selectedTemplate: $selectedTemplate)
         }
-        .sheet(isPresented: $showShareSheet, content: {
-            if let url = pdfURL {
-                ShareSheet(activityItems: [url])
-            }
-        })
         .alert("Save Failed", isPresented: $showSaveError) {
             Button("OK", role: .cancel) { }
         } message: {
             Text("There was an error saving your resume. Please try again.")
         }
+        .task {
+            // Generate PDF immediately on load
+            generatePDF()
+        }
+        .onChange(of: selectedTemplate) { _ in
+            // Regenerate when template changes
+            generatePDF()
+        }
     }
     
     @MainActor
-    func exportPDF() {
+    func generatePDF() {
+        // Reset URL to show loading state if needed
+        // generatedPDFUrl = nil 
+        
         let printContent: AnyView
         switch selectedTemplate {
         case .classic:
@@ -92,21 +101,30 @@ struct ResumePreviewView: View {
             printContent = AnyView(ModernPrintView(resume: resume))
         }
         
-        let renderer = ImageRenderer(content: printContent)
         let paperSize = CGSize(width: 612, height: 792)
-        renderer.proposedSize = ProposedViewSize(paperSize)
-        renderer.scale = 1.0
         
         // Generate Custom Filename
         let baseName = (resume.title ?? "").isEmpty ? resume.fullName : resume.title!
-        let safeName = baseName.replacingOccurrences(of: " ", with: "_")
-        let filename = safeName.isEmpty ? "Resume.pdf" : "\(safeName).pdf"
+        // Sanitize: Keep only alphanumerics, underscores, and dashes
+        var safeName = baseName.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_-"))).joined(separator: "_")
+        
+        if safeName.isEmpty { safeName = "Resume" }
+        
+        // Add timestamp to ensure uniqueness/reload if needed, or just overwrite
+        let filename = "\(safeName).pdf"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         
+        // Ensure environment is set for rendering
+        let renderView = printContent.environment(\.colorScheme, .light)
+        let renderer = ImageRenderer(content: renderView)
+        renderer.proposedSize = ProposedViewSize(paperSize)
+        renderer.scale = 1.0
+
         renderer.render { size, context in
             var box = CGRect(origin: .zero, size: paperSize)
             
             guard let pdf = CGContext(url as CFURL, mediaBox: &box, nil) else {
+                print("Failed to create PDF context")
                 return
             }
             
@@ -116,22 +134,15 @@ struct ResumePreviewView: View {
             pdf.closePDF()
         }
         
-        self.pdfURL = url
-        self.showShareSheet = true
+        if FileManager.default.fileExists(atPath: url.path) {
+            self.generatedPDFUrl = url
+        } else {
+            print("Failed to generate PDF at \(url)")
+        }
     }
 }
+// Removed ShareSheet struct as we use ShareLink now
 
-struct ShareSheet: UIViewControllerRepresentable {
-    var activityItems: [Any]
-    var applicationActivities: [UIActivity]? = nil
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-        return controller
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
 
 // MARK: - Classic Template (Professional with accent color)
 

@@ -33,32 +33,34 @@ struct SmartTextAnalyzer {
         
         // "Golden Vector" concepts - words that represent high-value professional traits
         let professionalTerms = [
-            "accomplished", "achieved", "adapted", "administered", "analyzed", "assessed",
-            "budgeted", "built", "collaborated", "communicated", "completed", "coordinated",
-            "created", "delegated", "delivered", "designed", "developed", "directed", "earned",
-            "effective", "efficient", "engineered", "established", "evaluated", "expanded",
-            "experience", "expertise", "facilitated", "formulated", "generated", "guided",
-            "impact", "implemented", "improved", "increased", "initiated", "innovated",
-            "integrated", "launched", "led", "managed", "mentored", "negotiated", "organized",
-            "oversaw", "planned", "presented", "produced", "proficiency", "programmed",
-            "project", "promoted", "proposed", "reduced", "resolved", "revenue", "saved",
-            "solved", "spearheaded", "strategic", "streamlined", "supervised", "supported",
-            "target", "taught", "team", "technical", "tested", "trained", "upgraded",
-            "utilized", "won", "wrote"
+            // Leadership & Management
+            "accomplished", "achieved", "administered", "analyzed", "assessed", "budgeted", "built", 
+            "collaborated", "communicated", "completed", "coordinated", "created", "delegated", 
+            "delivered", "designed", "developed", "directed", "earned", "effective", "efficient", 
+            "engineered", "established", "evaluated", "expanded", "experience", "expertise", 
+            "facilitated", "formulated", "generated", "guided", "impact", "implemented", "improved", 
+            "increased", "initiated", "innovated", "integrated", "launched", "led", "managed", 
+            "mentored", "negotiated", "organized", "oversaw", "planned", "presented", "produced", 
+            "proficiency", "programmed", "project", "promoted", "proposed", "reduced", "resolved", 
+            "revenue", "saved", "solved", "spearheaded", "strategic", "streamlined", "supervised", 
+            "supported", "target", "taught", "team", "technical", "tested", "trained", "upgraded", 
+            "utilized", "won", "wrote",
+            // Modern/Tech/Strategy additions
+            "architected", "automated", "cloud", "deployed", "scaled", "transformed", "optimized",
+            "visualized", "forecasted", "benchmarked", "audit", "compliance", "stakeholder", 
+            "roadmap", "agile", "scrum", "lifecycle", "pipeline", "infrastructure", "quantified"
         ]
         
         var totalScore = 0.0
         var matchCount = 0
         
         // For each keyword in the resume, find its similarity to the closest professional term.
-        // We limit to the top 20 keywords to avoid noise from common nouns.
+        // We limit to the top 50 keywords.
         let significantKeywords = keywords.prefix(50)
         
         for word in significantKeywords {
             var maxSimilarity = 0.0
             
-            // Optimization: Only check against a subset if performance is an issue, 
-            // but 70 terms * 50 keywords = 3500 comparisons is fast for NLEmbedding.
             for term in professionalTerms {
                 let distance = embedding.distance(between: word, and: term)
                 // distance is typically 0.0 (same) to ~2.0 (far).
@@ -69,17 +71,17 @@ struct SmartTextAnalyzer {
                 }
             }
             
-            // Only count if it has some relevance (similarity > 0.3)
-            if maxSimilarity > 0.3 {
+            // Only count if it has some relevance (similarity > 0.4 - increased threshold)
+            if maxSimilarity > 0.4 {
                 totalScore += maxSimilarity
                 matchCount += 1
             }
         }
         
-        // Normalize: If 20% of your words are "strong", that's a good resume.
-        // Let's say if we have 10 strong matches, we are doing well.
-        // We cap the score at 1.0.
-        let normalizedScore = min(Double(matchCount) * 0.1, 1.0)
+        // Normalize:
+        // We require about 15-20 unique "strong" keywords for a perfect score.
+        // 0.06 * 17 ~= 1.02
+        let normalizedScore = min(Double(matchCount) * 0.06, 1.0)
         
         return normalizedScore
     }

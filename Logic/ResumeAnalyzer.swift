@@ -91,18 +91,19 @@ struct ResumeAnalyzer {
     static func calculateATSScore(resume: Resume) -> Int {
         var score = 0
         
-        // 1. Contact Info (20 pts)
-        if !resume.firstName.isEmpty && !resume.lastName.isEmpty { score += 5 }
-        if !resume.email.isEmpty { score += 5 }
-        if !resume.phone.isEmpty { score += 5 }
-        if !resume.linkedin.isEmpty || !resume.github.isEmpty { score += 5 }
+        // 1. Contact Info (15 pts)
+        if !resume.firstName.isEmpty && !resume.lastName.isEmpty { score += 3 }
+        if !resume.email.isEmpty { score += 3 }
+        if !resume.phone.isEmpty { score += 3 }
+        if !resume.linkedin.isEmpty || !resume.github.isEmpty { score += 3 }
+        if !resume.location.isEmpty { score += 3 }
         
-        // 2. Education (15 pts)
-        if !resume.education.isEmpty { score += 15 }
+        // 2. Education (10 pts)
+        if !resume.education.isEmpty { score += 10 }
         
-        // 3. Experience & Projects (30 pts)
-        if !resume.experience.isEmpty { score += 15 }
-        if !resume.projects.isEmpty { score += 15 }
+        // 3. Experience & Projects (15 pts)
+        if !resume.experience.isEmpty { score += 10 }
+        if !resume.projects.isEmpty { score += 5 }
         
         // 4. Skills (20 pts)
         let totalSkills = resume.skills.values.reduce(0) { $0 + $1.count }
@@ -110,27 +111,17 @@ struct ResumeAnalyzer {
         else if totalSkills >= 3 { score += 10 }
         else if totalSkills > 0 { score += 5 }
         
-        // 5. Content Depth (15 pts) -> Refactored to include Semantic ML Score
-        // Check average bullet length. Short bullets are bad for ATS.
+        // 5. Content Depth & ML Semantic Score (40 pts)
         let allBullets = resume.experience.flatMap { $0.bullets } + resume.projects.flatMap { $0.bullets }
         if !allBullets.isEmpty {
-            let avgLength = allBullets.reduce(0) { $0 + $1.count } / allBullets.count
-            
-            // Length Score (Max 10)
-            let lengthScore: Int
-            if avgLength > 100 { lengthScore = 10 }
-            else if avgLength > 50 { lengthScore = 5 }
-            else { lengthScore = 2 }
-            
-            // Semantic ML Score (Max 15)
-            // Combine all bullets into one text block for analysis
             let fullText = allBullets.joined(separator: " ")
             let semanticScore = SmartTextAnalyzer.calculateSemanticScore(text: fullText)
             
-            // semanticScore is 0.0 to 1.0
-            let mlPoints = Int(semanticScore * 15.0)
+            // semanticScore is 0.0 to 1.0. 
+            // We weigh this heavily now (40 points).
+            let mlPoints = Int(semanticScore * 40.0)
             
-            score += lengthScore + mlPoints
+            score += mlPoints
         }
         
         return min(100, score)
