@@ -100,60 +100,39 @@ struct ResumePreviewView: View {
     
     @MainActor
     func performGeneration() {
-        // Reset URL to show loading state if needed
-        // generatedPDFUrl = nil 
+        // Generate HTML
+        let html = HTMLGenerator.generateHTML(for: resume, template: selectedTemplate)
         
-        let printContent: AnyView
-        switch selectedTemplate {
-        case .classic:
-            printContent = AnyView(ClassicPrintView(resume: resume))
-        case .simple:
-            printContent = AnyView(SimplePrintView(resume: resume))
-        case .modern:
-            printContent = AnyView(ModernPrintView(resume: resume))
-        }
-        
-        let paperSize = CGSize(width: 612, height: 792)
-        
-        // Generate Custom Filename
-        let baseName = (resume.title ?? "").isEmpty ? resume.fullName : resume.title!
-        // Sanitize: Keep only alphanumerics, underscores, and dashes
-        var safeName = baseName.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_- ")).inverted).joined(separator: "_")
-        
-        if safeName.isEmpty { safeName = "Resume" }
-        
-        // Add timestamp to ensure uniqueness/reload if needed, or just overwrite
-        let filename = "\(safeName).pdf"
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        
-        // Ensure environment is set for rendering
-        let renderView = printContent.environment(\.colorScheme, .light)
-        let renderer = ImageRenderer(content: renderView)
-        renderer.proposedSize = ProposedViewSize(paperSize)
-        renderer.scale = 1.0
-
-        renderer.render { size, context in
-            var box = CGRect(origin: .zero, size: paperSize)
+        // Export to PDF
+        PDFExporter.shared.exportToPDF(html: html) { pdfUrl in
             
-            guard let pdf = CGContext(url as CFURL, mediaBox: &box, nil) else {
-                print("Failed to create PDF context")
-                return
+            if let url = pdfUrl {
+                // Rename with custom filename logic
+                let baseName = (self.resume.title ?? "").isEmpty ? self.resume.fullName : self.resume.title!
+                var safeName = baseName.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_- ")).inverted).joined(separator: "_")
+                if safeName.isEmpty { safeName = "Resume" }
+                let filename = "\(safeName).pdf"
+                let targetURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+                
+                do {
+                    if FileManager.default.fileExists(atPath: targetURL.path) {
+                        try FileManager.default.removeItem(at: targetURL)
+                    }
+                    try FileManager.default.moveItem(at: url, to: targetURL)
+                    self.generatedPDFUrl = targetURL
+                    self.showShareSheet = true
+                } catch {
+                    print("Failed to rename PDF: \(error)")
+                    // Fallback to original URL if rename fails
+                    self.generatedPDFUrl = url
+                    self.showShareSheet = true
+                }
+            } else {
+                print("Failed to generate PDF")
             }
             
-            pdf.beginPDFPage(nil)
-            context(pdf)
-            pdf.endPDFPage()
-            pdf.closePDF()
+            self.isGeneratingPDF = false
         }
-        
-        if FileManager.default.fileExists(atPath: url.path) {
-            self.generatedPDFUrl = url
-            self.showShareSheet = true
-        } else {
-            print("Failed to generate PDF at \(url)")
-        }
-        
-        self.isGeneratingPDF = false
     }
 }
 struct ShareSheet: UIViewControllerRepresentable {
@@ -204,21 +183,15 @@ struct ClassicTemplateView: View {
                 
                 // Social links
                 HStack(spacing: 16) {
-                    if !resume.linkedin.isEmpty {
-                        Button {
-                            let urlString = resume.linkedin.hasPrefix("http") ? resume.linkedin : "https://\(resume.linkedin)"
-                            if let url = URL(string: urlString) { openURL(url) }
-                        } label: {
+                    if let linkedinURL = resume.linkedinURL {
+                        Link(destination: linkedinURL) {
                             Label("LinkedIn", systemImage: "link")
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(.black)
                         }
                     }
-                    if !resume.github.isEmpty {
-                        Button {
-                            let urlString = resume.github.hasPrefix("http") ? resume.github : "https://\(resume.github)"
-                            if let url = URL(string: urlString) { openURL(url) }
-                        } label: {
+                    if let githubURL = resume.githubURL {
+                        Link(destination: githubURL) {
                             Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(.black)
@@ -305,10 +278,8 @@ struct ClassicTemplateView: View {
                     ForEach(resume.projects) { project in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                if project.hasValidLink {
-                                    Button {
-                                        if let url = project.url { openURL(url) }
-                                    } label: {
+                                if project.hasValidLink, let url = project.url {
+                                    Link(destination: url) {
                                         Text(project.name)
                                             .font(.system(size: 14, weight: .semibold))
                                             .foregroundColor(.black)
@@ -355,12 +326,12 @@ struct ClassicTemplateView: View {
                                 if cert.hasValidLink, let url = cert.url {
                                     Link(destination: url) {
                                         Text(cert.name)
-                                            .font(.system(size: 14, weight: .semibold))
+                                            .font(.system(size: 14, weight: .medium))
                                             .foregroundColor(.black)
                                     }
                                 } else {
                                     Text(cert.name)
-                                        .font(.system(size: 14, weight: .semibold))
+                                        .font(.system(size: 14, weight: .medium))
                                 }
                                 Text(cert.issuer)
                                     .font(.system(size: 12))
@@ -466,21 +437,15 @@ struct SimpleTemplateView: View {
                 
                 // Links
                 HStack(spacing: 16) {
-                    if !resume.linkedin.isEmpty {
-                        Button {
-                            let urlString = resume.linkedin.hasPrefix("http") ? resume.linkedin : "https://\(resume.linkedin)"
-                            if let url = URL(string: urlString) { openURL(url) }
-                        } label: {
+                    if let linkedinURL = resume.linkedinURL {
+                        Link(destination: linkedinURL) {
                             Text("LinkedIn")
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(.black)
                         }
                     }
-                    if !resume.github.isEmpty {
-                        Button {
-                            let urlString = resume.github.hasPrefix("http") ? resume.github : "https://\(resume.github)"
-                            if let url = URL(string: urlString) { openURL(url) }
-                        } label: {
+                    if let githubURL = resume.githubURL {
+                        Link(destination: githubURL) {
                             Text("GitHub")
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(.black)
@@ -583,10 +548,8 @@ struct SimpleTemplateView: View {
                     ForEach(resume.projects) { project in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                if project.hasValidLink {
-                                    Button {
-                                        if let url = project.url { openURL(url) }
-                                    } label: {
+                                if project.hasValidLink, let url = project.url {
+                                    Link(destination: url) {
                                         Text(project.name)
                                             .font(.system(size: 14, weight: .semibold))
                                             .foregroundColor(.black)
@@ -717,21 +680,15 @@ struct ModernTemplateView: View {
                         }
                         
                         HStack(spacing: 12) {
-                            if !resume.linkedin.isEmpty {
-                                Button {
-                                    let urlString = resume.linkedin.hasPrefix("http") ? resume.linkedin : "https://\(resume.linkedin)"
-                                    if let url = URL(string: urlString) { openURL(url) }
-                                } label: {
+                            if let linkedinURL = resume.linkedinURL {
+                                Link(destination: linkedinURL) {
                                     Text("LinkedIn")
                                         .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(.black)
                                 }
                             }
-                            if !resume.github.isEmpty {
-                                Button {
-                                    let urlString = resume.github.hasPrefix("http") ? resume.github : "https://\(resume.github)"
-                                    if let url = URL(string: urlString) { openURL(url) }
-                                } label: {
+                            if let githubURL = resume.githubURL {
+                                Link(destination: githubURL) {
                                     Text("GitHub")
                                         .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(.black)
@@ -799,10 +756,8 @@ struct ModernTemplateView: View {
                         ForEach(resume.projects) { project in
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
-                                    if project.hasValidLink {
-                                        Button {
-                                            if let url = project.url { openURL(url) }
-                                        } label: {
+                                    if project.hasValidLink, let url = project.url {
+                                        Link(destination: url) {
                                             Text(project.name)
                                                 .font(.system(size: 15, weight: .semibold))
                                                 .foregroundColor(.black)
@@ -848,13 +803,13 @@ struct ModernTemplateView: View {
                                     if cert.hasValidLink, let url = cert.url {
                                         Link(destination: url) {
                                             Text(cert.name)
-                                                .font(.system(size: 13, weight: .semibold))
+                                                .font(.system(size: 13, weight: .medium))
                                                 .foregroundColor(accentColor)
                                                 .underline()
                                         }
                                     } else {
                                         Text(cert.name)
-                                            .font(.system(size: 13, weight: .semibold))
+                                            .font(.system(size: 13, weight: .medium))
                                     }
                                     Text(cert.issuer)
                                         .font(.system(size: 11))

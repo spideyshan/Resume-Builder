@@ -34,6 +34,18 @@ struct Resume: Identifiable, Codable, Equatable, Hashable {
         guard !phone.isEmpty else { return "" }
         return "\(countryCode.dialCode) \(phone)"
     }
+    
+    var linkedinURL: URL? {
+        guard !linkedin.isEmpty else { return nil }
+        let urlString = linkedin.hasPrefix("http") ? linkedin : "https://\(linkedin)"
+        return URL(string: urlString)
+    }
+    
+    var githubURL: URL? {
+        guard !github.isEmpty else { return nil }
+        let urlString = github.hasPrefix("http") ? github : "https://\(github)"
+        return URL(string: urlString)
+    }
 }
 
 // MARK: - Education
