@@ -1,4 +1,6 @@
 import SwiftUI
+import PhotosUI
+import UIKit
 
 struct ResumeFormView: View {
     @Environment(\.dismiss) var dismiss
@@ -8,6 +10,10 @@ struct ResumeFormView: View {
     
     // Resume ID (for updates)
     @State private var existingResumeId: UUID?
+    
+    // Photo Selection
+    @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var selectedPhotoData: Data?
     
     // Resume passed in for editing
     var existingResume: Resume?
@@ -60,6 +66,7 @@ struct ResumeFormView: View {
             location = resume.location
             linkedin = resume.linkedin
             github = resume.github
+            selectedPhotoData = resume.photoData
             
             // Map models to inputs
             educationList = resume.education.map { edu in
@@ -170,6 +177,54 @@ struct ResumeFormView: View {
 
     var personalInfoSection: some View {
         FormSection(number: "01", title: "Personal Information") {
+            // Photo Picker
+            HStack {
+                Spacer()
+                VStack {
+                    if let photoData = selectedPhotoData, let uiImage = UIImage(data: photoData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 100, height: 100)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.gray, lineWidth: 1))
+                    } else {
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 100)
+                            .foregroundColor(.gray)
+                    }
+                    
+                    PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+                        Text(selectedPhotoData == nil ? "Add Photo" : "Change Photo")
+                            .font(.footnote)
+                    }
+                    .onChange(of: selectedPhotoItem) {
+                        Task {
+                            if let item = selectedPhotoItem,
+                               let data = try? await item.loadTransferable(type: Data.self),
+                               let uiImage = UIImage(data: data) {
+                                // Resize to max 200x200 to keep memory low
+                                let maxSize: CGFloat = 200
+                                let scale = min(maxSize / uiImage.size.width, maxSize / uiImage.size.height, 1.0)
+                                let newSize = CGSize(width: uiImage.size.width * scale, height: uiImage.size.height * scale)
+                                UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+                                uiImage.draw(in: CGRect(origin: .zero, size: newSize))
+                                let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+                                UIGraphicsEndImageContext()
+                                
+                                if let resized = resizedImage,
+                                   let compressedData = resized.jpegData(compressionQuality: 0.6) {
+                                    selectedPhotoData = compressedData
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer()
+            }
+            
             HStack(spacing: 12) {
                 SimpleField(label: "FIRST NAME", placeholder: "John", text: $firstName)
                 SimpleField(label: "LAST NAME", placeholder: "Doe", text: $lastName)
@@ -353,6 +408,7 @@ struct ResumeFormView: View {
             location: location,
             linkedin: linkedin,
             github: github,
+            photoData: selectedPhotoData,
             education: educationList.compactMap { edu -> Education? in
                 guard !edu.institution.isEmpty else { return nil }
                 return Education(

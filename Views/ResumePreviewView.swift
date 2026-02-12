@@ -160,11 +160,28 @@ struct ClassicTemplateView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(resume.fullName.isEmpty ? "YOUR NAME" : resume.fullName.uppercased())
+                        .font(.system(size: 28, weight: .bold))
+                        .tracking(3)
+                        .foregroundColor(accentColor)
+                }
+                
+                Spacer()
+                
+                if let photoData = resume.photoData, let uiImage = UIImage(data: photoData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 80, height: 80)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(accentColor.opacity(0.3), lineWidth: 1))
+                }
+            }
+            
+            // Sub-header (Contact)
             VStack(alignment: .leading, spacing: 8) {
-                Text(resume.fullName.isEmpty ? "YOUR NAME" : resume.fullName.uppercased())
-                    .font(.system(size: 28, weight: .bold))
-                    .tracking(3)
-                    .foregroundColor(accentColor)
                 
                 // Contact row with icons
                 HStack(spacing: 16) {
@@ -419,6 +436,16 @@ struct SimpleTemplateView: View {
         VStack(spacing: 0) {
             // Header - centered
             VStack(spacing: 6) {
+                if let photoData = resume.photoData, let uiImage = UIImage(data: photoData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 90, height: 90)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
+                        .padding(.bottom, 4)
+                }
+                
                 Text(resume.fullName.isEmpty ? "Your Name" : resume.fullName)
                     .font(.system(size: 28, weight: .bold))
                 
@@ -657,6 +684,17 @@ struct ModernTemplateView: View {
                     .foregroundColor(accentColor)
                     
                     Spacer()
+                    
+                    // Photo
+                    if let photoData = resume.photoData, let uiImage = UIImage(data: photoData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 85, height: 85)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(accentColor.opacity(0.3), lineWidth: 1))
+                            .padding(.trailing, 16)
+                    }
                     
                     // Contact
                     VStack(alignment: .trailing, spacing: 6) {

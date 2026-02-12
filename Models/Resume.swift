@@ -18,6 +18,7 @@ struct Resume: Identifiable, Codable, Equatable, Hashable {
     var location: String
     var linkedin: String
     var github: String
+    var photoData: Data? // Profile photo data
     
     // Sections
     var education: [Education]

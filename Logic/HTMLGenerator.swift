@@ -112,7 +112,8 @@ struct HTMLGenerator {
         var html = "<div>"
         
         // Header
-        html += "<h1>\(resume.fullName.uppercased())</h1>"
+        html += "<div style='display: flex; justify-content: space-between; align-items: flex-start;'>"
+        html += "<div><h1>\(resume.fullName.uppercased())</h1>"
         
         var contacts: [String] = []
         if !resume.phone.isEmpty { contacts.append("📞 \(resume.fullPhone)") }
@@ -121,7 +122,13 @@ struct HTMLGenerator {
         if let linkedin = resume.linkedinURL { contacts.append("<a href='\(linkedin.absoluteString)'>🔗 LinkedIn</a>") }
         if let github = resume.githubURL { contacts.append("<a href='\(github.absoluteString)'>💻 GitHub</a>") }
         
-        html += "<div class='contact-info'>\(contacts.joined(separator: "&nbsp;&nbsp;&nbsp;"))</div>"
+        html += "<div class='contact-info'>\(contacts.joined(separator: "&nbsp;&nbsp;&nbsp;"))</div></div>"
+        
+        if let photoData = resume.photoData {
+            let base64 = photoData.base64EncodedString()
+            html += "<img src='data:image/jpeg;base64,\(base64)' style='width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;'>"
+        }
+        html += "</div>"
         html += "<div class='divider'></div>"
         
         // Education
@@ -229,6 +236,10 @@ struct HTMLGenerator {
         var html = "<div>"
         
         // Header
+        if let photoData = resume.photoData {
+            let base64 = photoData.base64EncodedString()
+            html += "<div style='text-align: center; margin-bottom: 10px;'><img src='data:image/jpeg;base64,\(base64)' style='width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 1px solid #eee;'></div>"
+        }
         html += "<h1>\(resume.fullName)</h1>"
         
         let items = [resume.location, resume.fullPhone, resume.email].filter { !$0.isEmpty }
@@ -357,7 +368,10 @@ struct HTMLGenerator {
         
         html += """
         <div class='header'>
-            <div>\(nameHtml)</div>
+            <div style='display:flex; align-items:center; gap: 20px;'>
+                 \(resume.photoData != nil ? "<img src='data:image/jpeg;base64,\(resume.photoData!.base64EncodedString())' style='width: 85px; height: 85px; border-radius: 12px; object-fit: cover; border: 1px solid #d8f5f5;'>" : "")
+                 <div style='font-size: 36px; font-weight: 300; color: #268c8c;'>\(nameHtml)</div>
+            </div>
             <div class='contact-stack'>\(contactHtml)</div>
         </div>
         <div class='content'>
