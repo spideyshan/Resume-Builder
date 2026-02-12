@@ -38,30 +38,36 @@ class ResumeManager: ObservableObject {
     
     // MARK: - Load
     func loadResumes() {
-        do {
-            let fileURLs = try fileManager.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil)
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
             
-            var loadedResumes: [Resume] = []
-            
-            for fileURL in fileURLs {
-                if fileURL.pathExtension == "json" {
-                    do {
-                        let data = try Data(contentsOf: fileURL)
-                        let resume = try JSONDecoder().decode(Resume.self, from: data)
-                        loadedResumes.append(resume)
-                    } catch {
-                        print("Failed to decode resume at \(fileURL.lastPathComponent): \(error.localizedDescription)")
+            do {
+                let fileURLs = try self.fileManager.contentsOfDirectory(at: self.documentsDirectory, includingPropertiesForKeys: nil)
+                
+                var loadedResumes: [Resume] = []
+                
+                for fileURL in fileURLs {
+                    if fileURL.pathExtension == "json" {
+                        do {
+                            let data = try Data(contentsOf: fileURL)
+                            let resume = try JSONDecoder().decode(Resume.self, from: data)
+                            loadedResumes.append(resume)
+                        } catch {
+                            print("Failed to decode resume at \(fileURL.lastPathComponent): \(error.localizedDescription)")
+                        }
                     }
                 }
+                
+                // Sort by last modified (newest first)
+                let sortedResumes = loadedResumes.sorted { $0.lastModified > $1.lastModified }
+                
+                DispatchQueue.main.async {
+                    self.savedResumes = sortedResumes
+                }
+                
+            } catch {
+                print("Failed to list directory: \(error.localizedDescription)")
             }
-            
-            // Sort by last modified (newest first)
-            DispatchQueue.main.async {
-                self.savedResumes = loadedResumes.sorted { $0.lastModified > $1.lastModified }
-            }
-            
-        } catch {
-            print("Failed to list directory: \(error.localizedDescription)")
         }
     }
     

@@ -58,7 +58,20 @@ ResumeCraft - Implemented Features
     - Haptic Feedback on interaction
     - Full Dark Mode support
 
-## Scripts
+12. **Enhanced Certifications**:
+    - Added Issuer, Issue Date, and Expiry Date fields.
+    - Clickable Certification Names (Links to Credential URL).
+    - Custom Black/Monochrome styling options in professional templates.
+
+13. **PDF Export Improvements**:
+    - Fixed filename generation bug (supports spaces and special characters).
+    - Ensure clickable links in generated PDFs.
+
+70. **Performance & Memory Optimization**:
+71.     - **Lazy PDF Generation**: Generates PDFs only on demand (share/export) to reduce memory usage.
+72.     - **Async Data Loading**: Loads resumes in the background for faster app launch.
+73. 
+74. ## Scripts
 - `push_to_github.sh`: Helper script to automate git commands in iCloud environments.
 
 ## AI & Smart Features (New)

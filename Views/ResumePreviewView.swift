@@ -12,6 +12,7 @@ struct ResumePreviewView: View {
     @State private var showShareSheet = false
     @State private var generatedPDFUrl: URL?
     @State private var showSaveError = false
+    @State private var isGeneratingPDF = false
     
     var body: some View {
         ScrollView {
@@ -24,6 +25,9 @@ struct ResumePreviewView: View {
                 case .modern:
                     ModernTemplateView(resume: resume, openURL: openURL)
                 }
+            }
+            .sheet(isPresented: $showTemplateSelector) {
+                TemplateSelectionView(selectedTemplate: $selectedTemplate)
             }
         }
         .background(Color.white)
@@ -46,14 +50,17 @@ struct ResumePreviewView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack {
                     // Share Link (Native)
-                    if let url = generatedPDFUrl {
-                        ShareLink(item: url) {
-                            Image(systemName: "square.and.arrow.up")
-                        }
-                    } else {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                    }
+                    // Share Button (Lazy Generation)
+                     if isGeneratingPDF {
+                         ProgressView()
+                             .scaleEffect(0.7)
+                     } else {
+                         Button {
+                             generatePDFAndShare()
+                         } label: {
+                             Image(systemName: "square.and.arrow.up")
+                         }
+                     }
                     
                     Button {
                         if resumeManager.save(resume: resume) {
@@ -68,26 +75,31 @@ struct ResumePreviewView: View {
                 }
             }
         }
-        .sheet(isPresented: $showTemplateSelector) {
-            TemplateSelectionView(selectedTemplate: $selectedTemplate)
+        .sheet(isPresented: $showShareSheet) {
+            if let url = generatedPDFUrl {
+                ShareSheet(items: [url])
+            }
         }
         .alert("Save Failed", isPresented: $showSaveError) {
             Button("OK", role: .cancel) { }
         } message: {
             Text("There was an error saving your resume. Please try again.")
         }
-        .task {
-            // Generate PDF immediately on load
-            generatePDF()
-        }
-        .onChange(of: selectedTemplate) { _ in
-            // Regenerate when template changes
-            generatePDF()
+        // Removed .task and .onChange to prevent eager memory usage
+    }
+    
+    @MainActor
+    func generatePDFAndShare() {
+        isGeneratingPDF = true
+        
+        // Defer to next run loop to allow UI to update
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.performGeneration()
         }
     }
     
     @MainActor
-    func generatePDF() {
+    func performGeneration() {
         // Reset URL to show loading state if needed
         // generatedPDFUrl = nil 
         
@@ -136,12 +148,26 @@ struct ResumePreviewView: View {
         
         if FileManager.default.fileExists(atPath: url.path) {
             self.generatedPDFUrl = url
+            self.showShareSheet = true
         } else {
             print("Failed to generate PDF at \(url)")
         }
+        
+        self.isGeneratingPDF = false
     }
 }
-// Removed ShareSheet struct as we use ShareLink now
+struct ShareSheet: UIViewControllerRepresentable {
+    var items: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+// MARK: - Legacy / Helper
 
 
 // MARK: - Classic Template (Professional with accent color)
