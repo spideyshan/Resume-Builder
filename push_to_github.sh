@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Pushing code to GitHub..."
 git add .
-git commit -m "Add profile photo support with memory-safe image resizing"
+git commit -m "Fix Classic template header whitespace with photo"
 git push
 echo "Done!"

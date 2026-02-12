@@ -166,6 +166,39 @@ struct ClassicTemplateView: View {
                         .font(.system(size: 28, weight: .bold))
                         .tracking(3)
                         .foregroundColor(accentColor)
+                    
+                    // Contact row with icons
+                    HStack(spacing: 16) {
+                        if !resume.phone.isEmpty {
+                            Label(resume.fullPhone, systemImage: "phone.fill")
+                        }
+                        if !resume.email.isEmpty {
+                            Label(resume.email, systemImage: "envelope.fill")
+                        }
+                        if !resume.location.isEmpty {
+                            Label(resume.location, systemImage: "location.fill")
+                        }
+                    }
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray)
+                    
+                    // Social links
+                    HStack(spacing: 16) {
+                        if let linkedinURL = resume.linkedinURL {
+                            Link(destination: linkedinURL) {
+                                Label("LinkedIn", systemImage: "link")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.black)
+                            }
+                        }
+                        if let githubURL = resume.githubURL {
+                            Link(destination: githubURL) {
+                                Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.black)
+                            }
+                        }
+                    }
                 }
                 
                 Spacer()
@@ -177,43 +210,6 @@ struct ClassicTemplateView: View {
                         .frame(width: 80, height: 80)
                         .clipShape(Circle())
                         .overlay(Circle().stroke(accentColor.opacity(0.3), lineWidth: 1))
-                }
-            }
-            
-            // Sub-header (Contact)
-            VStack(alignment: .leading, spacing: 8) {
-                
-                // Contact row with icons
-                HStack(spacing: 16) {
-                    if !resume.phone.isEmpty {
-                        Label(resume.fullPhone, systemImage: "phone.fill")
-                    }
-                    if !resume.email.isEmpty {
-                        Label(resume.email, systemImage: "envelope.fill")
-                    }
-                    if !resume.location.isEmpty {
-                        Label(resume.location, systemImage: "location.fill")
-                    }
-                }
-                .font(.system(size: 11))
-                .foregroundColor(.gray)
-                
-                // Social links
-                HStack(spacing: 16) {
-                    if let linkedinURL = resume.linkedinURL {
-                        Link(destination: linkedinURL) {
-                            Label("LinkedIn", systemImage: "link")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(.black)
-                        }
-                    }
-                    if let githubURL = resume.githubURL {
-                        Link(destination: githubURL) {
-                            Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(.black)
-                        }
-                    }
                 }
             }
             .padding(.bottom, 20)
