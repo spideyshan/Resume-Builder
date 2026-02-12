@@ -106,7 +106,7 @@ struct ResumePreviewView: View {
         // Generate Custom Filename
         let baseName = (resume.title ?? "").isEmpty ? resume.fullName : resume.title!
         // Sanitize: Keep only alphanumerics, underscores, and dashes
-        var safeName = baseName.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_-"))).joined(separator: "_")
+        var safeName = baseName.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_- ")).inverted).joined(separator: "_")
         
         if safeName.isEmpty { safeName = "Resume" }
         
@@ -320,6 +320,43 @@ struct ClassicTemplateView: View {
                 }
             }
             
+            // Certifications
+            if let certs = resume.certifications, !certs.isEmpty {
+                ClassicSection(title: "CERTIFICATIONS", accentColor: accentColor) {
+                    ForEach(certs) { cert in
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                if cert.hasValidLink, let url = cert.url {
+                                    Link(destination: url) {
+                                        Text(cert.name)
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(.black)
+                                    }
+                                } else {
+                                    Text(cert.name)
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                                Text(cert.issuer)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.gray)
+                                
+                                HStack(spacing: 8) {
+                                    Text("Issued: \(cert.issueDate)")
+                                    if !cert.expiryDate.isEmpty {
+                                        Text("•")
+                                        Text("Expires: \(cert.expiryDate)")
+                                    }
+                                }
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(.bottom, 8)
+                    }
+                }
+            }
+
             // Skills
             if !resume.skills.isEmpty {
                 ClassicSection(title: "SKILLS", accentColor: accentColor) {
@@ -427,6 +464,43 @@ struct SimpleTemplateView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.bottom, 24)
+            
+            // Certifications
+            if let certs = resume.certifications, !certs.isEmpty {
+                SimpleSection(title: "Certifications") {
+                    ForEach(certs) { cert in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                if cert.hasValidLink, let url = cert.url {
+                                    Link(destination: url) {
+                                        Text(cert.name)
+                                            .font(.system(size: 13, weight: .medium))
+                                            .foregroundColor(.black)
+                                    }
+                                } else {
+                                    Text(cert.name)
+                                        .font(.system(size: 13, weight: .medium))
+                                }
+                                Text(cert.issuer)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.gray)
+                                
+                                HStack(spacing: 6) {
+                                    Text(cert.issueDate)
+                                    if !cert.expiryDate.isEmpty {
+                                        Text("-")
+                                        Text(cert.expiryDate)
+                                    }
+                                }
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(.bottom, 8)
+                    }
+                }
+            }
             
             // Skills
             if !resume.skills.isEmpty {
@@ -739,6 +813,44 @@ struct ModernTemplateView: View {
                     }
                 }
                 
+                // Certifications
+                if let certs = resume.certifications, !certs.isEmpty {
+                    ModernSection(title: "CERTIFICATIONS", accentColor: accentColor) {
+                        ForEach(certs) { cert in
+                            HStack(alignment: .top) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    if cert.hasValidLink, let url = cert.url {
+                                        Link(destination: url) {
+                                            Text(cert.name)
+                                                .font(.system(size: 13, weight: .semibold))
+                                                .foregroundColor(accentColor)
+                                                .underline()
+                                        }
+                                    } else {
+                                        Text(cert.name)
+                                            .font(.system(size: 13, weight: .semibold))
+                                    }
+                                    Text(cert.issuer)
+                                        .font(.system(size: 11))
+                                        .foregroundColor(accentColor)
+                                    
+                                    HStack(spacing: 6) {
+                                        Text(cert.issueDate)
+                                        if !cert.expiryDate.isEmpty {
+                                            Text("→")
+                                            Text(cert.expiryDate)
+                                        }
+                                    }
+                                    .font(.system(size: 10))
+                                    .foregroundColor(accentColor.opacity(0.8))
+                                }
+                                Spacer()
+                            }
+                            .padding(.bottom, 8)
+                        }
+                    }
+                }
+
                 // Bottom row
                 HStack(alignment: .top, spacing: 32) {
                     // Education

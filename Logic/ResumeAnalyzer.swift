@@ -25,6 +25,13 @@ struct ResumeAnalyzer {
             feedback.append("Add a LinkedIn or GitHub profile to boost credibility.")
         }
         
+        // Certifications check
+        if let certs = resume.certifications, !certs.isEmpty {
+           feedback.append("Good job adding certifications! They validate your expertise.")
+        } else {
+            feedback.append("Consider adding certifications to validate your skills.")
+        }
+        
         // Education check
         if resume.education.isEmpty {
             feedback.append("Add at least one education entry.")

@@ -41,6 +41,7 @@ struct ResumeFormView: View {
     // Experience & Projects
     @State private var experiences: [ExperienceInput] = []
     @State private var projects: [ProjectInput] = []
+    @State private var certifications: [CertificationInput] = []
     
     // Removed custom init to fix State initialization issues
     
@@ -81,6 +82,17 @@ struct ResumeFormView: View {
             projects = resume.projects.map { proj in
                 ProjectInput(name: proj.name, link: proj.link, tools: proj.tools, bullets: proj.bullets.joined(separator: "\n"))
             }
+            
+            // Map Certifications
+            certifications = (resume.certifications ?? []).map { cert in
+                CertificationInput(
+                    name: cert.name,
+                    issuer: cert.issuer,
+                    issueDate: cert.issueDate,
+                    expiryDate: cert.expiryDate,
+                    link: cert.link ?? ""
+                )
+            }
         } else {
             // New Resume - Generate ID once so it persists across saves
             if existingResumeId == nil {
@@ -99,6 +111,7 @@ struct ResumeFormView: View {
                 skillsSection
                 experienceSection
                 projectsSection
+                certificationsSection
                 reviewButton
             }
             .padding(20)
@@ -285,6 +298,22 @@ struct ResumeFormView: View {
         }
     }
 
+    var certificationsSection: some View {
+        FormSection(number: "07", title: "Certifications") {
+            VStack(spacing: 14) {
+                ForEach($certifications) { $cert in
+                    CertificationCard(certification: $cert) {
+                        certifications.removeAll { $0.id == cert.id }
+                    }
+                }
+                
+                AddButton(text: "Add Certification") {
+                    certifications.append(CertificationInput())
+                }
+            }
+        }
+    }
+
     var reviewButton: some View {
         NavigationLink {
             let resume = buildResume()
@@ -352,6 +381,16 @@ struct ResumeFormView: View {
                     link: proj.link,
                     tools: proj.tools,
                     bullets: proj.bullets.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+                )
+            },
+            certifications: certifications.isEmpty ? nil : certifications.compactMap { cert -> Certification? in
+                guard !cert.name.isEmpty else { return nil }
+                return Certification(
+                    name: cert.name,
+                    issuer: cert.issuer,
+                    issueDate: cert.issueDate,
+                    expiryDate: cert.expiryDate,
+                    link: cert.link.isEmpty ? nil : cert.link
                 )
             }
         )
@@ -982,5 +1021,77 @@ struct AddButton: View {
             .background(Color(.systemGray5))
             .cornerRadius(8)
         }
+    }
+}
+
+struct CertificationInput: Identifiable {
+    let id = UUID()
+    var name = ""
+    var issuer = ""
+    var issueDate = ""
+    var expiryDate = ""
+    var link = ""
+}
+
+struct CertificationCard: View {
+    @Binding var certification: CertificationInput
+    let onDelete: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("CERTIFICATION")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .tracking(1)
+                Spacer()
+                Button(action: onDelete) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            TextField("Certification Name (e.g., AWS Solution Architect)", text: $certification.name)
+                .font(.system(size: 15, weight: .medium))
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(6)
+            
+            TextField("Issuer (e.g., Amazon)", text: $certification.issuer)
+                .font(.system(size: 14))
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(6)
+            
+            HStack(spacing: 10) {
+                TextField("Issued: Jan 2023", text: $certification.issueDate)
+                    .font(.system(size: 14))
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(6)
+                
+                TextField("Expires: Jan 2026", text: $certification.expiryDate)
+                    .font(.system(size: 14))
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(6)
+            }
+            
+            TextField("Link / URL (Optional)", text: $certification.link)
+                .font(.system(size: 14))
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(6)
+                .keyboardType(.URL)
+                .autocapitalization(.none)
+        }
+        .padding(14)
+        .background(Color(.systemGray6).opacity(0.5))
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color(.systemGray4), lineWidth: 1)
+        )
     }
 }

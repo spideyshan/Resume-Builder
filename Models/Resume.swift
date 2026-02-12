@@ -24,6 +24,7 @@ struct Resume: Identifiable, Codable, Equatable, Hashable {
     var skills: [SkillCategory: [String]]
     var experience: [Experience]
     var projects: [Project]
+    var certifications: [Certification]?
     
     var fullName: String {
         "\(firstName) \(lastName)".trimmingCharacters(in: .whitespaces)
@@ -296,4 +297,27 @@ struct CountryCode: Hashable, Identifiable, Codable {
     ]
     
     static let defaultCode = CountryCode(name: "India", code: "IN", dialCode: "+91")
+}
+
+// MARK: - Certification
+
+struct Certification: Identifiable, Hashable, Codable {
+    let id = UUID()
+    var name: String
+    var issuer: String
+    var issueDate: String  // e.g., "Jan 2023"
+    var expiryDate: String // e.g., "Jan 2026" or "No Expiry"
+    var link: String?      // Optional link to certificate
+    
+    var hasValidLink: Bool {
+        guard let link = link, !link.isEmpty else { return false }
+        let urlString = link.hasPrefix("http") ? link : "https://\(link)"
+        return URL(string: urlString) != nil
+    }
+    
+    var url: URL? {
+        guard hasValidLink, let link = link else { return nil }
+        let urlString = link.hasPrefix("http") ? link : "https://\(link)"
+        return URL(string: urlString)
+    }
 }
