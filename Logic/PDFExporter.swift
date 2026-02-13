@@ -11,9 +11,10 @@ class PDFExporter: NSObject, WKNavigationDelegate {
     func exportToPDF(html: String, completion: @escaping (URL?) -> Void) {
         self.completion = completion
         
-        // Configure WebView
+        // Configure WebView with page dimensions so CSS layout works
         let config = WKWebViewConfiguration()
-        self.webView = WKWebView(frame: .zero, configuration: config)
+        let pageFrame = CGRect(x: 0, y: 0, width: 612, height: 792)
+        self.webView = WKWebView(frame: pageFrame, configuration: config)
         self.webView?.navigationDelegate = self
         self.webView?.isHidden = true
         

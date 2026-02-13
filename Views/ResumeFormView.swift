@@ -44,10 +44,19 @@ struct ResumeFormView: View {
     @State private var customSkillText = ""
     @State private var selectedCategory: SkillCategory = .frontend
     
+    // Professional Summary
+    @State private var summary = ""
+    
     // Experience & Projects
     @State private var experiences: [ExperienceInput] = []
     @State private var projects: [ProjectInput] = []
     @State private var certifications: [CertificationInput] = []
+    
+    // Languages
+    @State private var languages: [LanguageInput] = []
+    
+    // Custom Sections
+    @State private var customSections: [CustomSectionInput] = []
     
     // Removed custom init to fix State initialization issues
     
@@ -58,6 +67,7 @@ struct ResumeFormView: View {
             
             existingResumeId = resume.id
             title = resume.title ?? ""
+            summary = resume.summary ?? ""
             firstName = resume.firstName
             lastName = resume.lastName
             email = resume.email
@@ -100,6 +110,16 @@ struct ResumeFormView: View {
                     link: cert.link ?? ""
                 )
             }
+            
+            // Map Languages
+            languages = (resume.languages ?? []).map { lang in
+                LanguageInput(name: lang.name)
+            }
+            
+            // Map Custom Sections
+            customSections = (resume.customSections ?? []).map { section in
+                CustomSectionInput(title: section.title, link: section.link ?? "", bullets: section.bullets.joined(separator: "\n"))
+            }
         } else {
             // New Resume - Generate ID once so it persists across saves
             if existingResumeId == nil {
@@ -113,12 +133,15 @@ struct ResumeFormView: View {
             VStack(alignment: .leading, spacing: 28) {
                 resumeTitleSection
                 personalInfoSection
+                summarySection
                 contactSection
                 educationSection
                 skillsSection
                 experienceSection
                 projectsSection
                 certificationsSection
+                languagesSection
+                customSectionsSection
                 reviewButton
             }
             .padding(20)
@@ -173,6 +196,28 @@ struct ResumeFormView: View {
                 )
         }
         .padding(.bottom, 10)
+    }
+
+    var summarySection: some View {
+        FormSection(number: "02", title: "Professional Summary") {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("SUMMARY / OBJECTIVE")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .tracking(0.5)
+                
+                TextEditor(text: $summary)
+                    .font(.system(size: 15))
+                    .frame(minHeight: 100)
+                    .padding(8)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                
+                Text("A brief 2-3 sentence overview of your professional background and goals.")
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+            }
+        }
     }
 
     var personalInfoSection: some View {
@@ -233,7 +278,7 @@ struct ResumeFormView: View {
     }
 
     var contactSection: some View {
-        FormSection(number: "02", title: "Contact Information") {
+        FormSection(number: "03", title: "Contact Information") {
             SimpleField(label: "EMAIL", placeholder: "john@email.com", text: $email)
             
             // Phone with country code
@@ -279,7 +324,7 @@ struct ResumeFormView: View {
     }
 
     var educationSection: some View {
-        FormSection(number: "03", title: "Education") {
+        FormSection(number: "04", title: "Education") {
             VStack(spacing: 14) {
                 ForEach($educationList) { $edu in
                     EducationCard(education: $edu) {
@@ -312,7 +357,7 @@ struct ResumeFormView: View {
     }
 
     var skillsSection: some View {
-        FormSection(number: "04", title: "Skills") {
+        FormSection(number: "05", title: "Skills") {
             SkillsSelectorView(
                 selectedSkills: $selectedSkills,
                 customSkillText: $customSkillText,
@@ -322,7 +367,7 @@ struct ResumeFormView: View {
     }
 
     var experienceSection: some View {
-        FormSection(number: "05", title: "Experience") {
+        FormSection(number: "06", title: "Experience") {
             VStack(spacing: 14) {
                 ForEach($experiences) { $exp in
                     ExperienceCard(experience: $exp) {
@@ -338,7 +383,7 @@ struct ResumeFormView: View {
     }
 
     var projectsSection: some View {
-        FormSection(number: "06", title: "Projects") {
+        FormSection(number: "07", title: "Projects") {
             VStack(spacing: 14) {
                 ForEach($projects) { $proj in
                     ProjectCard(project: $proj) {
@@ -354,7 +399,7 @@ struct ResumeFormView: View {
     }
 
     var certificationsSection: some View {
-        FormSection(number: "07", title: "Certifications") {
+        FormSection(number: "08", title: "Certifications") {
             VStack(spacing: 14) {
                 ForEach($certifications) { $cert in
                     CertificationCard(certification: $cert) {
@@ -366,6 +411,43 @@ struct ResumeFormView: View {
                     certifications.append(CertificationInput())
                 }
             }
+        }
+    }
+
+    var languagesSection: some View {
+        FormSection(number: "09", title: "Languages") {
+            VStack(spacing: 14) {
+                ForEach($languages) { $lang in
+                    LanguageCard(language: $lang) {
+                        languages.removeAll { $0.id == lang.id }
+                    }
+                }
+                
+                AddButton(text: "Add Language") {
+                    languages.append(LanguageInput())
+                }
+            }
+        }
+    }
+
+    var customSectionsSection: some View {
+        FormSection(number: "10", title: "Custom Sections") {
+            VStack(spacing: 14) {
+                ForEach($customSections) { $section in
+                    CustomSectionCard(section: $section) {
+                        customSections.removeAll { $0.id == section.id }
+                    }
+                }
+                
+                AddButton(text: "Add Custom Section") {
+                    customSections.append(CustomSectionInput())
+                }
+            }
+            
+            Text("Add sections like Volunteer Work, Publications, Awards, References, etc.")
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+                .padding(.top, 4)
         }
     }
 
@@ -447,6 +529,19 @@ struct ResumeFormView: View {
                     issueDate: cert.issueDate,
                     expiryDate: cert.expiryDate,
                     link: cert.link.isEmpty ? nil : cert.link
+                )
+            },
+            summary: summary.isEmpty ? nil : summary,
+            languages: languages.isEmpty ? nil : languages.compactMap { lang -> Language? in
+                guard !lang.name.isEmpty else { return nil }
+                return Language(name: lang.name)
+            },
+            customSections: customSections.isEmpty ? nil : customSections.compactMap { section -> CustomSection? in
+                guard !section.title.isEmpty else { return nil }
+                return CustomSection(
+                    title: section.title,
+                    link: section.link.isEmpty ? nil : section.link,
+                    bullets: section.bullets.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
                 )
             }
         )
@@ -1141,6 +1236,109 @@ struct CertificationCard: View {
                 .cornerRadius(6)
                 .keyboardType(.URL)
                 .autocapitalization(.none)
+        }
+        .padding(14)
+        .background(Color(.systemGray6).opacity(0.5))
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color(.systemGray4), lineWidth: 1)
+        )
+    }
+}
+
+struct LanguageInput: Identifiable {
+    let id = UUID()
+    var name = ""
+}
+
+struct CustomSectionInput: Identifiable {
+    let id = UUID()
+    var title = ""
+    var link = ""
+    var bullets = ""
+}
+
+struct LanguageCard: View {
+    @Binding var language: LanguageInput
+    let onDelete: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("LANGUAGE")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .tracking(1)
+                Spacer()
+                Button(action: onDelete) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            TextField("Language (e.g., English, Hindi)", text: $language.name)
+                .font(.system(size: 15, weight: .medium))
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(6)
+        }
+        .padding(14)
+        .background(Color(.systemGray6).opacity(0.5))
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color(.systemGray4), lineWidth: 1)
+        )
+    }
+}
+
+struct CustomSectionCard: View {
+    @Binding var section: CustomSectionInput
+    let onDelete: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("CUSTOM SECTION")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .tracking(1)
+                Spacer()
+                Button(action: onDelete) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            TextField("Section Title (e.g., Volunteer Work, Awards)", text: $section.title)
+                .font(.system(size: 15, weight: .medium))
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(6)
+            
+            TextField("Link (optional)", text: $section.link)
+                .font(.system(size: 14))
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(6)
+                .autocapitalization(.none)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("DETAILS (ONE PER LINE)")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .tracking(0.5)
+                
+                TextEditor(text: $section.bullets)
+                    .font(.system(size: 14))
+                    .frame(minHeight: 70)
+                    .padding(8)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(6)
+            }
         }
         .padding(14)
         .background(Color(.systemGray6).opacity(0.5))

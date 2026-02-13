@@ -26,6 +26,9 @@ struct Resume: Identifiable, Codable, Equatable, Hashable {
     var experience: [Experience]
     var projects: [Project]
     var certifications: [Certification]?
+    var summary: String?
+    var languages: [Language]?
+    var customSections: [CustomSection]?
     
     var fullName: String {
         "\(firstName) \(lastName)".trimmingCharacters(in: .whitespaces)
@@ -326,6 +329,34 @@ struct Certification: Identifiable, Hashable, Codable {
         guard let link = link, !link.isEmpty else { return false }
         let urlString = link.hasPrefix("http") ? link : "https://\(link)"
         return URL(string: urlString) != nil
+    }
+    
+    var url: URL? {
+        guard hasValidLink, let link = link else { return nil }
+        let urlString = link.hasPrefix("http") ? link : "https://\(link)"
+        return URL(string: urlString)
+    }
+}
+
+// MARK: - Language
+
+struct Language: Identifiable, Hashable, Codable {
+    let id = UUID()
+    var name: String
+}
+
+// MARK: - Custom Section
+
+struct CustomSection: Identifiable, Hashable, Codable {
+    let id = UUID()
+    var title: String
+    var link: String?
+    var bullets: [String]
+    
+    var hasValidLink: Bool {
+        guard let link = link, !link.isEmpty else { return false }
+        let trimmed = link.trimmingCharacters(in: .whitespaces)
+        return trimmed.contains(".") || trimmed.hasPrefix("http")
     }
     
     var url: URL? {

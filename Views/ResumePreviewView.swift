@@ -220,6 +220,16 @@ struct ClassicTemplateView: View {
                 .frame(height: 2)
                 .padding(.bottom, 20)
             
+            // Professional Summary
+            if let summary = resume.summary, !summary.isEmpty {
+                Text(summary)
+                    .font(.system(size: 12))
+                    .italic()
+                    .foregroundColor(.gray)
+                    .lineSpacing(3)
+                    .padding(.bottom, 16)
+            }
+            
             // Education
             if !resume.education.isEmpty {
                 ClassicSection(title: "EDUCATION", accentColor: accentColor) {
@@ -397,6 +407,50 @@ struct ClassicTemplateView: View {
                     }
                 }
             }
+
+            // Languages
+            if let langs = resume.languages, !langs.isEmpty {
+                ClassicSection(title: "LANGUAGES", accentColor: accentColor) {
+                    FlowLayout(spacing: 8) {
+                        ForEach(langs) { lang in
+                            Text(lang.name)
+                                .font(.system(size: 12, weight: .medium))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                                .cornerRadius(4)
+                        }
+                    }
+                }
+            }
+
+            // Custom Sections
+            if let sections = resume.customSections, !sections.isEmpty {
+                ForEach(sections) { section in
+                    ClassicSection(title: section.title.uppercased(), accentColor: accentColor) {
+                        ForEach(section.bullets, id: \.self) { bullet in
+                            HStack(alignment: .top, spacing: 8) {
+                                Circle()
+                                    .fill(accentColor)
+                                    .frame(width: 4, height: 4)
+                                    .padding(.top, 6)
+                                Text(bullet)
+                                    .font(.system(size: 12))
+                                    .lineSpacing(2)
+                            }
+                        }
+                    }
+                    .onTapGesture {
+                        if section.hasValidLink, let url = section.url {
+                            openURL(url)
+                        }
+                    }
+                }
+            }
         }
         .padding(28)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -478,6 +532,19 @@ struct SimpleTemplateView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.bottom, 24)
+            
+            // Professional Summary
+            if let summary = resume.summary, !summary.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(summary)
+                        .font(.system(size: 12))
+                        .foregroundColor(.gray)
+                        .lineSpacing(3)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.bottom, 16)
+            }
             
             // Certifications
             if let certs = resume.certifications, !certs.isEmpty {
@@ -627,6 +694,35 @@ struct SimpleTemplateView: View {
                     }
                 }
             }
+
+            // Languages
+            if let langs = resume.languages, !langs.isEmpty {
+                SimpleSection(title: "Languages") {
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("•")
+                            .font(.system(size: 13, weight: .bold))
+                        Text(langs.map { $0.name }.joined(separator: ", "))
+                            .font(.system(size: 13))
+                    }
+                }
+            }
+
+            // Custom Sections
+            if let sections = resume.customSections, !sections.isEmpty {
+                ForEach(sections) { section in
+                    SimpleSection(title: section.title) {
+                        ForEach(section.bullets, id: \.self) { bullet in
+                            Text("• \(bullet)")
+                                .font(.system(size: 12))
+                        }
+                    }
+                    .onTapGesture {
+                        if section.hasValidLink, let url = section.url {
+                            openURL(url)
+                        }
+                    }
+                }
+            }
         }
         .padding(28)
         .frame(maxWidth: .infinity)
@@ -746,6 +842,15 @@ struct ModernTemplateView: View {
             
             // Content
             VStack(alignment: .leading, spacing: 20) {
+                // Professional Summary
+                if let summary = resume.summary, !summary.isEmpty {
+                    Text(summary)
+                        .font(.system(size: 12))
+                        .foregroundColor(.gray)
+                        .lineSpacing(3)
+                        .padding(.bottom, 4)
+                }
+                
                 // Experience
                 if !resume.experience.isEmpty {
                     ModernSection(title: "EXPERIENCE", accentColor: accentColor) {
@@ -862,6 +967,45 @@ struct ModernTemplateView: View {
                                 Spacer()
                             }
                             .padding(.bottom, 8)
+                        }
+                    }
+                }
+
+                // Languages
+                if let langs = resume.languages, !langs.isEmpty {
+                    ModernSection(title: "LANGUAGES", accentColor: accentColor) {
+                        FlowLayout(spacing: 8) {
+                            ForEach(langs) { lang in
+                                Text(lang.name)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(lightAccent)
+                                    .cornerRadius(4)
+                            }
+                        }
+                    }
+                }
+
+                // Custom Sections
+                if let sections = resume.customSections, !sections.isEmpty {
+                    ForEach(sections) { section in
+                        ModernSection(title: section.title.uppercased(), accentColor: accentColor) {
+                            ForEach(section.bullets, id: \.self) { bullet in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: "arrow.right")
+                                        .font(.system(size: 8))
+                                        .foregroundColor(accentColor)
+                                        .padding(.top, 4)
+                                    Text(bullet)
+                                        .font(.system(size: 12))
+                                }
+                            }
+                        }
+                        .onTapGesture {
+                            if section.hasValidLink, let url = section.url {
+                                openURL(url)
+                            }
                         }
                     }
                 }
