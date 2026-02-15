@@ -69,6 +69,27 @@ struct WelcomeView: View {
                                     }
                                     .padding(.vertical, 4)
                                 }
+                                .contextMenu {
+                                    Button {
+                                        resumeManager.duplicate(resume: resume)
+                                    } label: {
+                                        Label("Duplicate", systemImage: "doc.on.doc")
+                                    }
+                                    
+                                    Button(role: .destructive) {
+                                        resumeManager.delete(resume: resume)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .swipeActions(edge: .leading) {
+                                    Button {
+                                        resumeManager.duplicate(resume: resume)
+                                    } label: {
+                                        Label("Duplicate", systemImage: "doc.on.doc")
+                                    }
+                                    .tint(.teal)
+                                }
                             }
                             .onDelete { indexSet in
                                 for index in indexSet {

@@ -86,6 +86,23 @@ class ResumeManager: ObservableObject {
         }
     }
     
+    // MARK: - Duplicate
+    @discardableResult
+    func duplicate(resume: Resume) -> Bool {
+        var copy = resume
+        copy.id = UUID()
+        copy.lastModified = Date()
+        
+        // Append "(Copy)" to the title or name
+        if let title = copy.title, !title.isEmpty {
+            copy.title = title + " (Copy)"
+        } else {
+            copy.title = (resume.fullName.isEmpty ? "Untitled Resume" : resume.fullName) + " (Copy)"
+        }
+        
+        return save(resume: copy)
+    }
+    
     // MARK: - Helper
     func getResume(withId id: UUID) -> Resume? {
         return savedResumes.first { $0.id == id }
