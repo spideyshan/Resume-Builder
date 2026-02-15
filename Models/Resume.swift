@@ -19,6 +19,11 @@ struct Resume: Identifiable, Codable, Equatable, Hashable {
     var linkedin: String
     var github: String
     var photoData: Data? // Profile photo data
+    var portfolio: String = "" // Portfolio Website
+    
+    // QR Code Settings
+    var showQRCode: Bool = false
+    var qrCodeTarget: QRCodeTarget = .linkedin
     
     // Sections
     var education: [Education]
@@ -52,6 +57,20 @@ struct Resume: Identifiable, Codable, Equatable, Hashable {
         let urlString = github.hasPrefix("http") ? github : "https://\(github)"
         return URL(string: urlString)
     }
+    
+    var portfolioURL: URL? {
+        guard !portfolio.isEmpty else { return nil }
+        let urlString = portfolio.hasPrefix("http") ? portfolio : "https://\(portfolio)"
+        return URL(string: urlString)
+    }
+}
+
+enum QRCodeTarget: String, CaseIterable, Codable, Identifiable {
+    case linkedin = "LinkedIn"
+    case github = "GitHub"
+    case portfolio = "Portfolio"
+    
+    var id: String { rawValue }
 }
 
 enum ResumeSection: String, CaseIterable, Identifiable {

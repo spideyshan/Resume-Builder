@@ -14,6 +14,7 @@ struct ResumePreviewView: View {
     @State private var showSaveError = false
     @State private var isGeneratingPDF = false
     @State private var accentColor = Color(red: 0.2, green: 0.4, blue: 0.6)
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     var body: some View {
         ScrollView {
@@ -55,29 +56,55 @@ struct ResumePreviewView: View {
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                HStack {
-                    // Share Link (Native)
-                    // Share Button (Lazy Generation)
-                     if isGeneratingPDF {
-                         ProgressView()
-                             .scaleEffect(0.7)
-                     } else {
-                         Button {
-                             generatePDFAndShare()
-                         } label: {
-                             Image(systemName: "square.and.arrow.up")
-                         }
-                     }
-                    
-                    Button {
-                        if resumeManager.save(resume: resume) {
-                            path = NavigationPath() // Pop to Root
+                if horizontalSizeClass == .compact {
+                    // Compact: Show Menu
+                    Menu {
+                        if isGeneratingPDF {
+                            ProgressView()
                         } else {
-                            showSaveError = true
+                            Button {
+                                generatePDFAndShare()
+                            } label: {
+                                Label("Share / Export PDF", systemImage: "square.and.arrow.up")
+                            }
+                        }
+                        
+                        Button {
+                            if resumeManager.save(resume: resume) {
+                                path = NavigationPath()
+                            } else {
+                                showSaveError = true
+                            }
+                        } label: {
+                            Label("Save & Exit", systemImage: "checkmark.circle")
                         }
                     } label: {
-                        Text("Save & Exit")
-                            .fontWeight(.bold)
+                        Image(systemName: "ellipsis.circle")
+                    }
+                } else {
+                    // Regular: Show Buttons
+                    HStack {
+                         if isGeneratingPDF {
+                             ProgressView()
+                                 .scaleEffect(0.7)
+                         } else {
+                             Button {
+                                 generatePDFAndShare()
+                             } label: {
+                                 Image(systemName: "square.and.arrow.up")
+                             }
+                         }
+                        
+                        Button {
+                            if resumeManager.save(resume: resume) {
+                                path = NavigationPath() // Pop to Root
+                            } else {
+                                showSaveError = true
+                            }
+                        } label: {
+                            Text("Save & Exit")
+                                .fontWeight(.bold)
+                        }
                     }
                 }
             }
@@ -217,6 +244,10 @@ struct ClassicTemplateView: View {
                         .clipShape(Circle())
                         .overlay(Circle().stroke(accentColor.opacity(0.3), lineWidth: 1))
                 }
+                
+
+                
+
             }
             .padding(.bottom, 20)
             
@@ -239,10 +270,33 @@ struct ClassicTemplateView: View {
                 default: EmptyView()
                 }
             }
+            
+            
+            // QR Code Footer
+            if resume.showQRCode {
+                let targetURL = targetLink(for: resume.qrCodeTarget)
+                if let qrImage = QRCodeGenerator.generate(from: targetURL) {
+                    HStack {
+                        Spacer()
+                        Image(uiImage: qrImage)
+                            .resizable()
+                            .interpolation(.none)
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                    }
+                    .padding(.top, 20)
+                }
+            }
         }
-        .padding(28)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .foregroundColor(.black)
+    
+    }
+    
+    func targetLink(for target: QRCodeTarget) -> String {
+        switch target {
+        case .linkedin: return resume.linkedinURL?.absoluteString ?? ""
+        case .github: return resume.githubURL?.absoluteString ?? ""
+        case .portfolio: return resume.portfolioURL?.absoluteString ?? ""
+        }
     }
 
     
@@ -563,6 +617,8 @@ struct SimpleTemplateView: View {
                         .padding(.bottom, 4)
                 }
                 
+
+                
                 Text(resume.fullName.isEmpty ? "Your Name" : resume.fullName)
                     .font(.system(size: 28, weight: .bold))
                 
@@ -614,11 +670,34 @@ struct SimpleTemplateView: View {
                 default: EmptyView()
                 }
             }
+            
+            
+            // QR Code Footer
+            if resume.showQRCode {
+                let targetURL = targetLink(for: resume.qrCodeTarget)
+                if let qrImage = QRCodeGenerator.generate(from: targetURL) {
+                    HStack {
+                        Spacer()
+                        Image(uiImage: qrImage)
+                            .resizable()
+                            .interpolation(.none)
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                    }
+                    .padding(.top, 24)
+                }
+            }
         }
-        .padding(28)
-        .frame(maxWidth: .infinity)
-        .foregroundColor(.black)
+    
+    }
+    
+    func targetLink(for target: QRCodeTarget) -> String {
+        switch target {
+        case .linkedin: return resume.linkedinURL?.absoluteString ?? ""
+        case .github: return resume.githubURL?.absoluteString ?? ""
+        case .portfolio: return resume.portfolioURL?.absoluteString ?? ""
         }
+    }
     
     // MARK: - Section Views
     
@@ -919,6 +998,8 @@ struct ModernTemplateView: View {
                             .padding(.trailing, 16)
                     }
                     
+
+                    
                     // Contact
                     VStack(alignment: .trailing, spacing: 6) {
                         if !resume.email.isEmpty {
@@ -988,8 +1069,33 @@ struct ModernTemplateView: View {
             }
             }
             .padding(24)
+            
+            // QR Code Footer (Outside colored header)
+            if resume.showQRCode {
+                let targetURL = targetLink(for: resume.qrCodeTarget)
+                if let qrImage = QRCodeGenerator.generate(from: targetURL) {
+                    HStack {
+                        Spacer()
+                        Image(uiImage: qrImage)
+                            .resizable()
+                            .interpolation(.none)
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
+                }
+            }
         }
         .foregroundColor(.black)
+    }
+    
+    func targetLink(for target: QRCodeTarget) -> String {
+        switch target {
+        case .linkedin: return resume.linkedinURL?.absoluteString ?? ""
+        case .github: return resume.githubURL?.absoluteString ?? ""
+        case .portfolio: return resume.portfolioURL?.absoluteString ?? ""
+        }
     }
 
     

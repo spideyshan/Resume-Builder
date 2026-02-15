@@ -100,3 +100,13 @@ ResumeCraft - Implemented Features
     - **Drag-and-Drop Interface**: Reorder resume sections (Experience, Education, Skills, etc.) via a simple list.
     - **Dynamic Templates**: All templates (Classic, Simple, Modern) automatically adapt to your custom layout.
     - **Custom PDF Export**: The generated PDF respects your exact section order.
+
+17. **QR Code Integration**:
+    - **Smart Links**: Generate QR codes linking to your LinkedIn, GitHub, or Portfolio.
+    - **Template Integration**: Automatically placed in the bottom-right corner of Classic, Simple, and Modern templates.
+    - **PDF Support**: Embedded as high-quality images in exported PDFs for easy scanning by recruiters.
+
+18. **Responsive Toolbar**:
+    - **Adaptive UI**: Toolbar automatically adjusts layout based on device orientation.
+    - **Space Saving**: Groups "Share" and "Save" actions into a menu on compact screens (iPhone Portrait) to prevent clutter.
+    - **Accessible**: Ensures critical actions are always reachable regardless of screen size.

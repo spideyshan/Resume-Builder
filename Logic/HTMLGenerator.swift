@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 struct HTMLGenerator {
     
@@ -121,6 +122,23 @@ struct HTMLGenerator {
         }
     }
     
+    private static func generateQRCodeBase64(for resume: Resume) -> String? {
+        guard resume.showQRCode else { return nil }
+        
+        var targetURL = ""
+        switch resume.qrCodeTarget {
+        case .linkedin: targetURL = resume.linkedinURL?.absoluteString ?? ""
+        case .github: targetURL = resume.githubURL?.absoluteString ?? ""
+        case .portfolio: targetURL = resume.portfolioURL?.absoluteString ?? ""
+        }
+        
+        guard !targetURL.isEmpty,
+              let image = QRCodeGenerator.generate(from: targetURL),
+              let data = image.pngData() else { return nil }
+              
+        return data.base64EncodedString()
+    }
+    
     // MARK: - Classic Template
     
     private static func classicBody(_ resume: Resume) -> String {
@@ -152,6 +170,9 @@ struct HTMLGenerator {
             let base64 = photoData.base64EncodedString()
             html += "<img src='data:image/jpeg;base64,\(base64)' class='photo'>"
         }
+        
+
+        
         html += "</div>"
         html += "<div class='divider'></div>"
         
@@ -315,6 +336,10 @@ struct HTMLGenerator {
             }
         }
         
+        if let qrBase64 = generateQRCodeBase64(for: resume) {
+            html += "<div style='display:flex; justify-content:flex-end; margin-top:20px;'><img src='data:image/png;base64,\(qrBase64)' style='width:60px; height:60px;'></div>"
+        }
+        
         html += "</div>"
         return html
     }
@@ -329,6 +354,9 @@ struct HTMLGenerator {
             let base64 = photoData.base64EncodedString()
             html += "<img src='data:image/jpeg;base64,\(base64)' class='photo'>"
         }
+        
+
+        
         html += "<h1>\(resume.fullName)</h1>"
         
         let items = [resume.location, resume.fullPhone, resume.email].filter { !$0.isEmpty }
@@ -499,6 +527,10 @@ struct HTMLGenerator {
             }
         }
         
+        if let qrBase64 = generateQRCodeBase64(for: resume) {
+            html += "<div style='display:flex; justify-content:flex-end; margin-top:24px;'><img src='data:image/png;base64,\(qrBase64)' style='width:60px; height:60px;'></div>"
+        }
+        
         html += "</div>"
         return html
     }
@@ -533,7 +565,10 @@ struct HTMLGenerator {
                 \(resume.photoData != nil ? "<img src='data:image/jpeg;base64,\(resume.photoData!.base64EncodedString())' class='photo'>" : "")
                 <div class='name-block'>\(nameHtml)</div>
             </div>
-            <div class='contact-stack'>\(contactHtml)</div>
+            <div style='display:flex; align-items:center; gap:16px;'>
+
+                <div class='contact-stack'>\(contactHtml)</div>
+            </div>
         </div>
         <div class='content'>
         """
@@ -701,6 +736,11 @@ struct HTMLGenerator {
         }
         
         html += "</div>" // Close content
+        
+        if let qrBase64 = generateQRCodeBase64(for: resume) {
+            html += "<div style='display:flex; justify-content:flex-end; padding:0 24px 24px;'><img src='data:image/png;base64,\(qrBase64)' style='width:60px; height:60px;'></div>"
+        }
+        
         return html
     }
 }

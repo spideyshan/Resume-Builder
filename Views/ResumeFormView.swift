@@ -32,8 +32,13 @@ struct ResumeFormView: View {
     @State private var location = ""
     @State private var linkedin = ""
     @State private var github = ""
+    @State private var portfolio = ""
     @State private var showCountryPicker = false
     @State private var showSaveError = false
+    
+    // QR Code
+    @State private var showQRCode = false
+    @State private var qrCodeTarget: QRCodeTarget = .linkedin
     
     // Education
     @State private var educationList: [EducationInput] = []
@@ -80,6 +85,9 @@ struct ResumeFormView: View {
             location = resume.location
             linkedin = resume.linkedin
             github = resume.github
+            portfolio = resume.portfolio
+            showQRCode = resume.showQRCode
+            qrCodeTarget = resume.qrCodeTarget
             selectedPhotoData = resume.photoData
             
             // Map models to inputs
@@ -346,6 +354,32 @@ struct ResumeFormView: View {
             SimpleField(label: "LOCATION", placeholder: "New York, NY", text: $location)
             SimpleField(label: "LINKEDIN", placeholder: "linkedin.com/in/johndoe", text: $linkedin)
             SimpleField(label: "GITHUB", placeholder: "github.com/johndoe", text: $github)
+            SimpleField(label: "PORTFOLIO", placeholder: "johndoe.com", text: $portfolio)
+            
+            // QR Code Settings
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle("Show QR Code on Resume", isOn: $showQRCode)
+                    .font(.system(size: 14, weight: .medium))
+                    .tint(.blue)
+                
+                if showQRCode {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("QR CODE LINK TARGET")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .tracking(0.5)
+                        
+                        Picker("Target", selection: $qrCodeTarget) {
+                            ForEach(QRCodeTarget.allCases) { target in
+                                Text(target.rawValue).tag(target)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    .padding(.top, 4)
+                }
+            }
+            .padding(.top, 8)
         }
     }
 
@@ -517,6 +551,9 @@ struct ResumeFormView: View {
             linkedin: linkedin,
             github: github,
             photoData: selectedPhotoData,
+            portfolio: portfolio,
+            showQRCode: showQRCode,
+            qrCodeTarget: qrCodeTarget,
             education: educationList.compactMap { edu -> Education? in
                 guard !edu.institution.isEmpty else { return nil }
                 return Education(
