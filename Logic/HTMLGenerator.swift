@@ -155,145 +155,163 @@ struct HTMLGenerator {
         html += "</div>"
         html += "<div class='divider'></div>"
         
-        // Professional Summary
-        if let summary = resume.summary, !summary.isEmpty {
-            html += "<div class='summary'>\(summary)</div>"
-        }
+        // Dynamic Sections
+        let order = resume.sectionOrder ?? ResumeSection.defaultOrder
         
-        // Education
-        if !resume.education.isEmpty {
-            html += "<div class='section-title'>Education</div>"
-            for edu in resume.education {
-                html += """
-                <div class='entry'>
-                    <div class='entry-header'>
-                        <div>
-                            <div class='title'>\(edu.displayTitle)</div>
-                            <div class='subtitle'>\(edu.institution)</div>
-                        </div>
-                        <div style='text-align:right;'>
-                            <div class='date'>\(edu.year)</div>
-                            <div class='highlight'>\(edu.formattedScore)</div>
-                        </div>
-                    </div>
-                </div>
-                """
-            }
-        }
-        
-        // Experience
-        if !resume.experience.isEmpty {
-            html += "<div class='section-title'>Experience</div>"
-            for exp in resume.experience {
-                html += """
-                <div class='entry'>
-                    <div class='entry-header'>
-                        <div>
-                            <div class='title'>\(exp.title)</div>
-                            <div class='subtitle'>\(exp.company)</div>
-                        </div>
-                        <div class='date'>\(exp.duration)</div>
-                    </div>
-                    <ul>
-                        \(exp.bullets.map { "<li>\($0)</li>" }.joined())
-                    </ul>
-                </div>
-                """
-            }
-        }
-        
-        // Projects
-        if !resume.projects.isEmpty {
-            html += "<div class='section-title'>Projects</div>"
-            for project in resume.projects {
-                let nameHtml = project.hasValidLink && project.url != nil ? "<a href='\(project.url!.absoluteString)'>\(project.name)</a>" : project.name
-                html += """
-                <div class='entry'>
-                    <div class='entry-header'>
-                        <div class='title'>\(nameHtml)</div>
-                        \(!project.tools.isEmpty ? "<div class='date' style='background:#f7fafc; padding:2px 6px; border-radius:3px;'>\(project.tools)</div>" : "")
-                    </div>
-                    <ul>
-                        \(project.bullets.map { "<li>\($0)</li>" }.joined())
-                    </ul>
-                </div>
-                """
-            }
-        }
-        
-        // Certifications
-        if let certs = resume.certifications, !certs.isEmpty {
-            html += "<div class='section-title'>Certifications</div>"
-            for cert in certs {
-                let nameHtml = cert.hasValidLink && cert.url != nil ? "<a href='\(cert.url!.absoluteString)'>\(cert.name)</a>" : cert.name
-                html += """
-                <div class='entry'>
-                    <div class='title' style='font-weight:500;'>\(nameHtml)</div>
-                    <div class='subtitle' style='color:#555;'>\(cert.issuer)</div>
-                    \(!cert.issueDate.isEmpty ? "<div class='cert-date'>Issued: \(cert.issueDate)\(cert.expiryDate.isEmpty ? "" : " - Expires: " + cert.expiryDate)</div>" : "")
-                </div>
-                """
-            }
-        }
-        
-        // Skills
-        if !resume.skills.isEmpty {
-            html += "<div class='section-title'>Skills</div>"
-            for category in SkillCategory.allCases {
-                if let skills = resume.skills[category], !skills.isEmpty {
-                    html += """
-                    <div style='margin-bottom:6px;'>
-                        <div style='font-size:10px; font-weight:700; color:#2c5282; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.5px;'>\(category.rawValue)</div>
-                        <div class='skills-container'>
-                            \(skills.map { "<span class='skill-tag'>\($0)</span>" }.joined())
-                        </div>
-                    </div>
-                    """
+        for sectionId in order {
+            switch sectionId {
+            case ResumeSection.summary.rawValue:
+                // Professional Summary
+                if let summary = resume.summary, !summary.isEmpty {
+                    html += "<div class='summary'>\(summary)</div>"
                 }
-            }
-        }
-        
-        // Languages
-        if let langs = resume.languages, !langs.isEmpty {
-            html += "<div class='section-title'>Languages</div>"
-            html += "<div class='skills-container'>"
-            for lang in langs {
-                html += "<span class='skill-tag'>\(lang.name)</span>"
-            }
-            html += "</div>"
-        }
-        
-        // Custom Sections
-        if let sections = resume.customSections, !sections.isEmpty {
-            for section in sections {
-                if section.hasValidLink, let url = section.url {
-                    html += "<div class='section-title'><a href='\(url.absoluteString)' style='color:inherit; text-decoration:none;'>\(section.title.uppercased())</a></div>"
-                } else {
-                    html += "<div class='section-title'>\(section.title.uppercased())</div>"
-                }
-                if let provider = section.provider, !provider.isEmpty {
-                    var metaLine = "<div class='entry'><div class='entry-header'><div class='subtitle' style='color:#555;'>\(provider)</div>"
-                    var dateParts: [String] = []
-                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
-                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append("Expires: \(expiryDate)") }
-                    if !dateParts.isEmpty {
-                        metaLine += "<div class='date'>\(dateParts.joined(separator: " - "))</div>"
-                    }
-                    metaLine += "</div></div>"
-                    html += metaLine
-                } else {
-                    var dateParts: [String] = []
-                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
-                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append("Expires: \(expiryDate)") }
-                    if !dateParts.isEmpty {
-                        html += "<div class='cert-date'>\(dateParts.joined(separator: " - "))</div>"
+                
+            case ResumeSection.education.rawValue:
+                // Education
+                if !resume.education.isEmpty {
+                    html += "<div class='section-title'>Education</div>"
+                    for edu in resume.education {
+                        html += """
+                        <div class='entry'>
+                            <div class='entry-header'>
+                                <div>
+                                    <div class='title'>\(edu.displayTitle)</div>
+                                    <div class='subtitle'>\(edu.institution)</div>
+                                </div>
+                                <div style='text-align:right;'>
+                                    <div class='date'>\(edu.year)</div>
+                                    <div class='highlight'>\(edu.formattedScore)</div>
+                                </div>
+                            </div>
+                        </div>
+                        """
                     }
                 }
-                html += "<ul>"
-                for bullet in section.bullets {
-                    html += "<li>\(bullet)</li>"
+                
+            case ResumeSection.experience.rawValue:
+                // Experience
+                if !resume.experience.isEmpty {
+                    html += "<div class='section-title'>Experience</div>"
+                    for exp in resume.experience {
+                        html += """
+                        <div class='entry'>
+                            <div class='entry-header'>
+                                <div>
+                                    <div class='title'>\(exp.title)</div>
+                                    <div class='subtitle'>\(exp.company)</div>
+                                </div>
+                                <div class='date'>\(exp.duration)</div>
+                            </div>
+                            <ul>
+                                \(exp.bullets.map { "<li>\($0)</li>" }.joined())
+                            </ul>
+                        </div>
+                        """
+                    }
                 }
-                html += "</ul>"
+                
+            case ResumeSection.projects.rawValue:
+                // Projects
+                if !resume.projects.isEmpty {
+                    html += "<div class='section-title'>Projects</div>"
+                    for project in resume.projects {
+                        let nameHtml = project.hasValidLink && project.url != nil ? "<a href='\(project.url!.absoluteString)'>\(project.name)</a>" : project.name
+                        html += """
+                        <div class='entry'>
+                            <div class='entry-header'>
+                                <div class='title'>\(nameHtml)</div>
+                                \(!project.tools.isEmpty ? "<div class='date' style='background:#f7fafc; padding:2px 6px; border-radius:3px;'>\(project.tools)</div>" : "")
+                            </div>
+                            <ul>
+                                \(project.bullets.map { "<li>\($0)</li>" }.joined())
+                            </ul>
+                        </div>
+                        """
+                    }
+                }
+                
+            case ResumeSection.certifications.rawValue:
+                // Certifications
+                if let certs = resume.certifications, !certs.isEmpty {
+                    html += "<div class='section-title'>Certifications</div>"
+                    for cert in certs {
+                        let nameHtml = cert.hasValidLink && cert.url != nil ? "<a href='\(cert.url!.absoluteString)'>\(cert.name)</a>" : cert.name
+                        html += """
+                        <div class='entry'>
+                            <div class='title' style='font-weight:500;'>\(nameHtml)</div>
+                            <div class='subtitle' style='color:#555;'>\(cert.issuer)</div>
+                            \(!cert.issueDate.isEmpty ? "<div class='cert-date'>Issued: \(cert.issueDate)\(cert.expiryDate.isEmpty ? "" : " - Expires: " + cert.expiryDate)</div>" : "")
+                        </div>
+                        """
+                    }
+                }
+                
+            case ResumeSection.skills.rawValue:
+                // Skills
+                if !resume.skills.isEmpty {
+                    html += "<div class='section-title'>Skills</div>"
+                    for category in SkillCategory.allCases {
+                        if let skills = resume.skills[category], !skills.isEmpty {
+                            html += """
+                            <div style='margin-bottom:6px;'>
+                                <div style='font-size:10px; font-weight:700; color:#2c5282; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.5px;'>\(category.rawValue)</div>
+                                <div class='skills-container'>
+                                    \(skills.map { "<span class='skill-tag'>\($0)</span>" }.joined())
+                                </div>
+                            </div>
+                            """
+                        }
+                    }
+                }
+                
+            case ResumeSection.languages.rawValue:
+                // Languages
+                if let langs = resume.languages, !langs.isEmpty {
+                    html += "<div class='section-title'>Languages</div>"
+                    html += "<div class='skills-container'>"
+                    for lang in langs {
+                        html += "<span class='skill-tag'>\(lang.name)</span>"
+                    }
+                    html += "</div>"
+                }
+                
+            case ResumeSection.custom.rawValue:
+                // Custom Sections
+                if let sections = resume.customSections, !sections.isEmpty {
+                    for section in sections {
+                        if section.hasValidLink, let url = section.url {
+                            html += "<div class='section-title'><a href='\(url.absoluteString)' style='color:inherit; text-decoration:none;'>\(section.title.uppercased())</a></div>"
+                        } else {
+                            html += "<div class='section-title'>\(section.title.uppercased())</div>"
+                        }
+                        if let provider = section.provider, !provider.isEmpty {
+                            var metaLine = "<div class='entry'><div class='entry-header'><div class='subtitle' style='color:#555;'>\(provider)</div>"
+                            var dateParts: [String] = []
+                            if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                            if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append("Expires: \(expiryDate)") }
+                            if !dateParts.isEmpty {
+                                metaLine += "<div class='date'>\(dateParts.joined(separator: " - "))</div>"
+                            }
+                            metaLine += "</div></div>"
+                            html += metaLine
+                        } else {
+                            var dateParts: [String] = []
+                            if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                            if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append("Expires: \(expiryDate)") }
+                            if !dateParts.isEmpty {
+                                html += "<div class='cert-date'>\(dateParts.joined(separator: " - "))</div>"
+                            }
+                        }
+                        html += "<ul>"
+                        for bullet in section.bullets {
+                            html += "<li>\(bullet)</li>"
+                        }
+                        html += "</ul>"
+                    }
+                }
+                
+            default:
+                break
             }
         }
         
@@ -325,141 +343,159 @@ struct HTMLGenerator {
             html += "<div class='contact-info'>\(links.joined(separator: "  &bull;  "))</div>"
         }
         
-        // Professional Summary
-        if let summary = resume.summary, !summary.isEmpty {
-            html += "<div class='summary'>\(summary)</div>"
-        }
+        // Dynamic Sections
+        let order = resume.sectionOrder ?? ResumeSection.defaultOrder
         
-        // Certifications (Top for Simple)
-        if let certs = resume.certifications, !certs.isEmpty {
-            html += "<div class='section-title'>Certifications</div>"
-            for cert in certs {
-                let nameHtml = cert.hasValidLink && cert.url != nil ? "<a href='\(cert.url!.absoluteString)'>\(cert.name)</a>" : cert.name
-                html += """
-                <div class='entry'>
-                    <div class='title' style='font-weight:500;'>\(nameHtml)</div>
-                    <div class='subtitle'>\(cert.issuer)</div>
-                    \(!cert.issueDate.isEmpty ? "<div class='cert-date'>Issued: \(cert.issueDate)\(cert.expiryDate.isEmpty ? "" : " - " + cert.expiryDate)</div>" : "")
-                </div>
-                """
-            }
-        }
-        
-        // Skills
-        if !resume.skills.isEmpty {
-            html += "<div class='section-title'>Skills</div>"
-            for category in SkillCategory.allCases {
-                if let skills = resume.skills[category], !skills.isEmpty {
-                    html += """
-                    <div class='skill-row'>
-                        <span class='skill-label'>\(category.rawValue): </span>
-                        <span>\(skills.joined(separator: ", "))</span>
-                    </div>
-                    """
+        for sectionId in order {
+            switch sectionId {
+            case ResumeSection.summary.rawValue:
+                // Professional Summary
+                if let summary = resume.summary, !summary.isEmpty {
+                    html += "<div class='summary'>\(summary)</div>"
                 }
-            }
-        }
-        
-        // Experience
-        if !resume.experience.isEmpty {
-            html += "<div class='section-title'>Experience</div>"
-            for exp in resume.experience {
-                html += """
-                <div class='entry'>
-                    <div class='entry-header'>
-                        <div>
-                            <div class='title'>\(exp.company)</div>
-                            <div class='subtitle'>\(exp.title)</div>
+                
+            case ResumeSection.certifications.rawValue:
+                // Certifications
+                if let certs = resume.certifications, !certs.isEmpty {
+                    html += "<div class='section-title'>Certifications</div>"
+                    for cert in certs {
+                        let nameHtml = cert.hasValidLink && cert.url != nil ? "<a href='\(cert.url!.absoluteString)'>\(cert.name)</a>" : cert.name
+                        html += """
+                        <div class='entry'>
+                            <div class='title' style='font-weight:500;'>\(nameHtml)</div>
+                            <div class='subtitle'>\(cert.issuer)</div>
+                            \(!cert.issueDate.isEmpty ? "<div class='cert-date'>Issued: \(cert.issueDate)\(cert.expiryDate.isEmpty ? "" : " - " + cert.expiryDate)</div>" : "")
                         </div>
-                        <div class='date'>\(exp.duration)</div>
-                    </div>
-                    <ul>
-                        \(exp.bullets.map { "<li>\($0)</li>" }.joined())
-                    </ul>
-                </div>
-                """
-            }
-        }
-        
-        // Projects
-        if !resume.projects.isEmpty {
-            html += "<div class='section-title'>Projects</div>"
-            for project in resume.projects {
-                let nameHtml = project.hasValidLink && project.url != nil ? "<a href='\(project.url!.absoluteString)'>\(project.name)</a>" : project.name
-                html += """
-                <div class='entry'>
-                    <div class='entry-header'>
-                        <div>
-                            <span class='title'>\(nameHtml)</span>
-                            \(!project.tools.isEmpty ? "<span class='date' style='margin-left:8px;'>(\(project.tools))</span>" : "")
-                        </div>
-                    </div>
-                    <ul>
-                        \(project.bullets.map { "<li>\($0)</li>" }.joined())
-                    </ul>
-                </div>
-                """
-            }
-        }
-        
-        // Education
-        if !resume.education.isEmpty {
-            html += "<div class='section-title'>Education</div>"
-            for edu in resume.education {
-                html += """
-                <div class='entry'>
-                    <div class='entry-header'>
-                        <div>
-                            <div class='title' style='font-size:12px;'>\(edu.displayTitle)</div>
-                            <div class='subtitle'>\(edu.institution)</div>
-                        </div>
-                        <div style='text-align:right;'>
-                            <div class='date'>\(edu.year)</div>
-                            \(!edu.formattedScore.isEmpty ? "<div class='date'>\(edu.formattedScore)</div>" : "")
-                        </div>
-                    </div>
-                </div>
-                """
-            }
-        }
-        
-        // Languages
-        if let langs = resume.languages, !langs.isEmpty {
-            html += "<div class='section-title'>Languages</div>"
-            html += "<div class='skill-row'>\(langs.map { $0.name }.joined(separator: ", "))</div>"
-        }
-        
-        // Custom Sections
-        if let sections = resume.customSections, !sections.isEmpty {
-            for section in sections {
-                if section.hasValidLink, let url = section.url {
-                    html += "<div class='section-title'><a href='\(url.absoluteString)' style='color:inherit; text-decoration:none;'>\(section.title)</a></div>"
-                } else {
-                    html += "<div class='section-title'>\(section.title)</div>"
-                }
-                if let provider = section.provider, !provider.isEmpty {
-                    var metaLine = "<div class='entry'><div class='entry-header'><div class='subtitle'>\(provider)</div>"
-                    var dateParts: [String] = []
-                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
-                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
-                    if !dateParts.isEmpty {
-                        metaLine += "<div class='date'>\(dateParts.joined(separator: " - "))</div>"
-                    }
-                    metaLine += "</div></div>"
-                    html += metaLine
-                } else {
-                    var dateParts: [String] = []
-                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
-                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
-                    if !dateParts.isEmpty {
-                        html += "<div class='cert-date'>\(dateParts.joined(separator: " - "))</div>"
+                        """
                     }
                 }
-                html += "<ul>"
-                for bullet in section.bullets {
-                    html += "<li>\(bullet)</li>"
+                
+            case ResumeSection.skills.rawValue:
+                // Skills
+                if !resume.skills.isEmpty {
+                    html += "<div class='section-title'>Skills</div>"
+                    for category in SkillCategory.allCases {
+                        if let skills = resume.skills[category], !skills.isEmpty {
+                            html += """
+                            <div class='skill-row'>
+                                <span class='skill-label'>\(category.rawValue): </span>
+                                <span>\(skills.joined(separator: ", "))</span>
+                            </div>
+                            """
+                        }
+                    }
                 }
-                html += "</ul>"
+                
+            case ResumeSection.experience.rawValue:
+                // Experience
+                if !resume.experience.isEmpty {
+                    html += "<div class='section-title'>Experience</div>"
+                    for exp in resume.experience {
+                        html += """
+                        <div class='entry'>
+                            <div class='entry-header'>
+                                <div>
+                                    <div class='title'>\(exp.company)</div>
+                                    <div class='subtitle'>\(exp.title)</div>
+                                </div>
+                                <div class='date'>\(exp.duration)</div>
+                            </div>
+                            <ul>
+                                \(exp.bullets.map { "<li>\($0)</li>" }.joined())
+                            </ul>
+                        </div>
+                        """
+                    }
+                }
+                
+            case ResumeSection.projects.rawValue:
+                // Projects
+                if !resume.projects.isEmpty {
+                    html += "<div class='section-title'>Projects</div>"
+                    for project in resume.projects {
+                        let nameHtml = project.hasValidLink && project.url != nil ? "<a href='\(project.url!.absoluteString)'>\(project.name)</a>" : project.name
+                        html += """
+                        <div class='entry'>
+                            <div class='entry-header'>
+                                <div>
+                                    <span class='title'>\(nameHtml)</span>
+                                    \(!project.tools.isEmpty ? "<span class='date' style='margin-left:8px;'>(\(project.tools))</span>" : "")
+                                </div>
+                            </div>
+                            <ul>
+                                \(project.bullets.map { "<li>\($0)</li>" }.joined())
+                            </ul>
+                        </div>
+                        """
+                    }
+                }
+                
+            case ResumeSection.education.rawValue:
+                // Education
+                if !resume.education.isEmpty {
+                    html += "<div class='section-title'>Education</div>"
+                    for edu in resume.education {
+                        html += """
+                        <div class='entry'>
+                            <div class='entry-header'>
+                                <div>
+                                    <div class='title' style='font-size:12px;'>\(edu.displayTitle)</div>
+                                    <div class='subtitle'>\(edu.institution)</div>
+                                </div>
+                                <div style='text-align:right;'>
+                                    <div class='date'>\(edu.year)</div>
+                                    \(!edu.formattedScore.isEmpty ? "<div class='date'>\(edu.formattedScore)</div>" : "")
+                                </div>
+                            </div>
+                        </div>
+                        """
+                    }
+                }
+                
+            case ResumeSection.languages.rawValue:
+                // Languages
+                if let langs = resume.languages, !langs.isEmpty {
+                    html += "<div class='section-title'>Languages</div>"
+                    html += "<div class='skill-row'>\(langs.map { $0.name }.joined(separator: ", "))</div>"
+                }
+                
+            case ResumeSection.custom.rawValue:
+                // Custom Sections
+                if let sections = resume.customSections, !sections.isEmpty {
+                    for section in sections {
+                        if section.hasValidLink, let url = section.url {
+                            html += "<div class='section-title'><a href='\(url.absoluteString)' style='color:inherit; text-decoration:none;'>\(section.title)</a></div>"
+                        } else {
+                            html += "<div class='section-title'>\(section.title)</div>"
+                        }
+                        if let provider = section.provider, !provider.isEmpty {
+                            var metaLine = "<div class='entry'><div class='entry-header'><div class='subtitle'>\(provider)</div>"
+                            var dateParts: [String] = []
+                            if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                            if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
+                            if !dateParts.isEmpty {
+                                metaLine += "<div class='date'>\(dateParts.joined(separator: " - "))</div>"
+                            }
+                            metaLine += "</div></div>"
+                            html += metaLine
+                        } else {
+                            var dateParts: [String] = []
+                            if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                            if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
+                            if !dateParts.isEmpty {
+                                html += "<div class='cert-date'>\(dateParts.joined(separator: " - "))</div>"
+                            }
+                        }
+                        html += "<ul>"
+                        for bullet in section.bullets {
+                            html += "<li>\(bullet)</li>"
+                        }
+                        html += "</ul>"
+                    }
+                }
+                
+            default:
+                break
             }
         }
         
@@ -502,160 +538,166 @@ struct HTMLGenerator {
         <div class='content'>
         """
         
-        // Professional Summary
-        if let summary = resume.summary, !summary.isEmpty {
-            html += "<div class='summary'>\(summary)</div>"
-        }
+        // Dynamic Sections
+        let order = resume.sectionOrder ?? ResumeSection.defaultOrder
         
-        // Experience
-        if !resume.experience.isEmpty {
-            html += "<div class='section-title'>Experience</div>"
-            for exp in resume.experience {
-                html += """
-                <div class='entry'>
-                    <div class='entry-header'>
-                        <div>
-                            <div class='title'>\(exp.title)</div>
-                            <div class='subtitle'>\(exp.company)</div>
+        for sectionId in order {
+            switch sectionId {
+            case ResumeSection.summary.rawValue:
+                // Professional Summary
+                if let summary = resume.summary, !summary.isEmpty {
+                    html += "<div class='summary'>\(summary)</div>"
+                }
+                
+            case ResumeSection.experience.rawValue:
+                // Experience
+                if !resume.experience.isEmpty {
+                    html += "<div class='section-title'>Experience</div>"
+                    for exp in resume.experience {
+                        html += """
+                        <div class='entry'>
+                            <div class='entry-header'>
+                                <div>
+                                    <div class='title'>\(exp.title)</div>
+                                    <div class='subtitle'>\(exp.company)</div>
+                                </div>
+                                <div class='date-badge'>\(exp.duration)</div>
+                            </div>
+                            \(exp.bullets.map { """
+                            <div class='bullet'>
+                                <span class='bullet-arrow'>&#x25B8;</span>
+                                <span class='bullet-text'>\($0)</span>
+                            </div>
+                            """ }.joined())
                         </div>
-                        <div class='date-badge'>\(exp.duration)</div>
-                    </div>
-                    \(exp.bullets.map { """
-                    <div class='bullet'>
-                        <span class='bullet-arrow'>&#x25B8;</span>
-                        <span class='bullet-text'>\($0)</span>
-                    </div>
-                    """ }.joined())
-                </div>
-                """
-            }
-        }
-        
-        // Projects
-        if !resume.projects.isEmpty {
-            html += "<div class='section-title'>Projects</div>"
-            for project in resume.projects {
-                let nameHtml = project.hasValidLink && project.url != nil ? "<a href='\(project.url!.absoluteString)'>\(project.name)</a>" : project.name
-                html += """
-                <div class='entry'>
-                    <div class='entry-header'>
-                        <span class='title'>\(nameHtml)</span>
-                        \(!project.tools.isEmpty ? "<div class='date-badge'>\(project.tools)</div>" : "")
-                    </div>
-                    \(project.bullets.map { """
-                    <div class='bullet'>
-                        <span class='bullet-arrow'>&#x25B8;</span>
-                        <span class='bullet-text'>\($0)</span>
-                    </div>
-                    """ }.joined())
-                </div>
-                """
-            }
-        }
-        
-        // Certifications
-        if let certs = resume.certifications, !certs.isEmpty {
-            html += "<div class='section-title'>Certifications</div>"
-            for cert in certs {
-                let nameHtml = cert.hasValidLink && cert.url != nil ? "<a href='\(cert.url!.absoluteString)'>\(cert.name)</a>" : cert.name
-                html += """
-                <div class='entry'>
-                    <div class='title' style='font-size:12px; font-weight:500;'>\(nameHtml)</div>
-                    <div class='subtitle'>\(cert.issuer)</div>
-                    \(!cert.issueDate.isEmpty ? "<div class='cert-date'>Issued: \(cert.issueDate)\(cert.expiryDate.isEmpty ? "" : " - " + cert.expiryDate)</div>" : "")
-                </div>
-                """
-            }
-        }
-        
-        // Bottom Row (Education + Skills)
-        html += "<div class='two-col'>"
-        
-        // Education
-        if !resume.education.isEmpty {
-            html += "<div>"
-            html += "<div class='section-title' style='margin-top:0;'>Education</div>"
-            for edu in resume.education {
-                html += """
-                <div style='margin-bottom:8px;'>
-                    <div class='title' style='font-size:12px;'>\(edu.displayTitle)</div>
-                    <div style='font-size:10px; color:#555;'>\(edu.institution)</div>
-                    <div style='font-size:10px; color:#268c8c; margin-top:1px;'>
-                        \(edu.year)\(!edu.formattedScore.isEmpty ? " &bull; " + edu.formattedScore : "")
-                    </div>
-                </div>
-                """
-            }
-            html += "</div>"
-        }
-        
-        // Skills
-        if !resume.skills.isEmpty {
-            html += "<div>"
-            html += "<div class='section-title' style='margin-top:0;'>Skills</div>"
-            for category in SkillCategory.allCases {
-                if let skills = resume.skills[category], !skills.isEmpty {
-                    html += """
-                    <div style='margin-bottom:5px;'>
-                        <div style='font-size:10px; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:0.5px;'>\(category.rawValue)</div>
-                        <div style='font-size:11px;'>\(skills.joined(separator: " &bull; "))</div>
-                    </div>
-                    """
-                }
-            }
-            html += "</div>"
-        }
-        
-        html += "</div></div>" // Close two-col and content
-        
-        // Languages
-        if let langs = resume.languages, !langs.isEmpty {
-            html += "<div style='padding:0 36px 16px;'>"
-            html += "<div class='section-title'>Languages</div>"
-            html += "<div>"
-            for lang in langs {
-                html += "<span class='lang-tag'>\(lang.name)</span>"
-            }
-            html += "</div></div>"
-        }
-        
-        // Custom Sections
-        if let sections = resume.customSections, !sections.isEmpty {
-            html += "<div style='padding:0 36px 16px;'>"
-            for section in sections {
-                if section.hasValidLink, let url = section.url {
-                    html += "<div class='section-title'><a href='\(url.absoluteString)' style='color:inherit; text-decoration:none;'>\(section.title.uppercased())</a></div>"
-                } else {
-                    html += "<div class='section-title'>\(section.title.uppercased())</div>"
-                }
-                if let provider = section.provider, !provider.isEmpty {
-                    var metaLine = "<div class='entry'><div class='entry-header'><div class='subtitle'>\(provider)</div>"
-                    var dateParts: [String] = []
-                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
-                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
-                    if !dateParts.isEmpty {
-                        metaLine += "<div class='date-badge'>\(dateParts.joined(separator: " - "))</div>"
-                    }
-                    metaLine += "</div></div>"
-                    html += metaLine
-                } else {
-                    var dateParts: [String] = []
-                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
-                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
-                    if !dateParts.isEmpty {
-                        html += "<div class='cert-date'>\(dateParts.joined(separator: " - "))</div>"
+                        """
                     }
                 }
-                for bullet in section.bullets {
-                    html += """
-                    <div class='bullet'>
-                        <span class='bullet-arrow'>&#x25B8;</span>
-                        <span class='bullet-text'>\(bullet)</span>
-                    </div>
-                    """
+                
+            case ResumeSection.projects.rawValue:
+                // Projects
+                if !resume.projects.isEmpty {
+                    html += "<div class='section-title'>Projects</div>"
+                    for project in resume.projects {
+                        let nameHtml = project.hasValidLink && project.url != nil ? "<a href='\(project.url!.absoluteString)'>\(project.name)</a>" : project.name
+                        html += """
+                        <div class='entry'>
+                            <div class='entry-header'>
+                                <span class='title'>\(nameHtml)</span>
+                                \(!project.tools.isEmpty ? "<div class='date-badge'>\(project.tools)</div>" : "")
+                            </div>
+                            \(project.bullets.map { """
+                            <div class='bullet'>
+                                <span class='bullet-arrow'>&#x25B8;</span>
+                                <span class='bullet-text'>\($0)</span>
+                            </div>
+                            """ }.joined())
+                        </div>
+                        """
+                    }
                 }
+                
+            case ResumeSection.certifications.rawValue:
+                // Certifications
+                if let certs = resume.certifications, !certs.isEmpty {
+                    html += "<div class='section-title'>Certifications</div>"
+                    for cert in certs {
+                        let nameHtml = cert.hasValidLink && cert.url != nil ? "<a href='\(cert.url!.absoluteString)'>\(cert.name)</a>" : cert.name
+                        html += """
+                        <div class='entry'>
+                            <div class='title' style='font-size:12px; font-weight:500;'>\(nameHtml)</div>
+                            <div class='subtitle'>\(cert.issuer)</div>
+                            \(!cert.issueDate.isEmpty ? "<div class='cert-date'>Issued: \(cert.issueDate)\(cert.expiryDate.isEmpty ? "" : " - " + cert.expiryDate)</div>" : "")
+                        </div>
+                        """
+                    }
+                }
+                
+            case ResumeSection.education.rawValue:
+                // Education
+                if !resume.education.isEmpty {
+                    html += "<div class='section-title'>Education</div>"
+                    for edu in resume.education {
+                        html += """
+                        <div style='margin-bottom:12px;'>
+                            <div class='title' style='font-size:12px;'>\(edu.displayTitle)</div>
+                            <div style='font-size:10px; color:#555;'>\(edu.institution)</div>
+                            <div style='font-size:10px; color:#268c8c; margin-top:1px;'>
+                                \(edu.year)\(!edu.formattedScore.isEmpty ? " &bull; " + edu.formattedScore : "")
+                            </div>
+                        </div>
+                        """
+                    }
+                }
+                
+            case ResumeSection.skills.rawValue:
+                // Skills
+                if !resume.skills.isEmpty {
+                    html += "<div class='section-title'>Skills</div>"
+                    for category in SkillCategory.allCases {
+                        if let skills = resume.skills[category], !skills.isEmpty {
+                            html += """
+                            <div style='margin-bottom:5px;'>
+                                <div style='font-size:10px; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:0.5px;'>\(category.rawValue)</div>
+                                <div style='font-size:11px;'>\(skills.joined(separator: " &bull; "))</div>
+                            </div>
+                            """
+                        }
+                    }
+                }
+                
+            case ResumeSection.languages.rawValue:
+                // Languages
+                if let langs = resume.languages, !langs.isEmpty {
+                    html += "<div class='section-title'>Languages</div>"
+                    html += "<div>"
+                    for lang in langs {
+                        html += "<span class='lang-tag'>\(lang.name)</span>"
+                    }
+                    html += "</div>"
+                }
+                
+            case ResumeSection.custom.rawValue:
+                // Custom Sections
+                if let sections = resume.customSections, !sections.isEmpty {
+                    for section in sections {
+                        if section.hasValidLink, let url = section.url {
+                            html += "<div class='section-title'><a href='\(url.absoluteString)' style='color:inherit; text-decoration:none;'>\(section.title.uppercased())</a></div>"
+                        } else {
+                            html += "<div class='section-title'>\(section.title.uppercased())</div>"
+                        }
+                        if let provider = section.provider, !provider.isEmpty {
+                            var metaLine = "<div class='entry'><div class='entry-header'><div class='subtitle'>\(provider)</div>"
+                            var dateParts: [String] = []
+                            if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                            if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
+                            if !dateParts.isEmpty {
+                                metaLine += "<div class='date-badge'>\(dateParts.joined(separator: " - "))</div>"
+                            }
+                            metaLine += "</div></div>"
+                            html += metaLine
+                        } else {
+                            var dateParts: [String] = []
+                            if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                            if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
+                            if !dateParts.isEmpty {
+                                html += "<div class='cert-date'>\(dateParts.joined(separator: " - "))</div>"
+                            }
+                        }
+                        for bullet in section.bullets {
+                            html += """
+                            <div class='bullet'>
+                                <span class='bullet-arrow'>&#x25B8;</span>
+                                <span class='bullet-text'>\(bullet)</span>
+                            </div>
+                            """
+                        }
+                    }
+                }
+                
+            default:
+                break
             }
-            html += "</div>"
         }
         
         html += "</div>" // Close content

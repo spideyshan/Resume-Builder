@@ -58,6 +58,10 @@ struct ResumeFormView: View {
     // Custom Sections
     @State private var customSections: [CustomSectionInput] = []
     
+    // Section Order
+    @State private var sectionOrder: [String]?
+    @State private var showReorderSheet = false
+    
     // Removed custom init to fix State initialization issues
     
     func loadExistingResume() {
@@ -117,9 +121,20 @@ struct ResumeFormView: View {
             }
             
             // Map Custom Sections
-            customSections = (resume.customSections ?? []).map { section in
-                CustomSectionInput(title: section.title, provider: section.provider ?? "", provideDate: section.provideDate ?? "", expiryDate: section.expiryDate ?? "", link: section.link ?? "", bullets: section.bullets.joined(separator: "\n"))
-            }
+            customSections = resume.customSections?.map { section in
+                CustomSectionInput(
+                    id: section.id,
+                    title: section.title,
+                    provider: section.provider ?? "",
+                    provideDate: section.provideDate ?? "",
+                    expiryDate: section.expiryDate ?? "",
+                    link: section.link ?? "",
+                    bullets: section.bullets.joined(separator: "\n")
+                )
+            } ?? []
+            
+            // Map Section Order
+            sectionOrder = resume.sectionOrder
         } else {
             // New Resume - Generate ID once so it persists across saves
             if existingResumeId == nil {
@@ -150,18 +165,29 @@ struct ResumeFormView: View {
         .navigationTitle(existingResumeId != nil ? "Edit Resume" : "Resume Builder")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-             ToolbarItem(placement: .topBarTrailing) {
-                 Button("Save") {
-                     let resume = buildResume()
-                     print("Attempting to save resume: \(resume.title ?? "Untitled")")
-                     if resumeManager.save(resume: resume) {
-                         dismiss()
-                     } else {
-                         showSaveError = true
+            ToolbarItem(placement: .topBarTrailing) {
+                 HStack {
+                     Button {
+                         showReorderSheet = true
+                     } label: {
+                         Image(systemName: "arrow.up.arrow.down")
                      }
+                     
+                     Button("Save") {
+                         let resume = buildResume()
+                         print("Attempting to save resume: \(resume.title ?? "Untitled")")
+                         if resumeManager.save(resume: resume) {
+                             dismiss()
+                         } else {
+                             showSaveError = true
+                         }
+                     }
+                     .fontWeight(.bold)
                  }
-                 .fontWeight(.bold)
              }
+        }
+        .sheet(isPresented: $showReorderSheet) {
+            SectionReorderView(sectionOrder: $sectionOrder)
         }
         .alert("Save Failed", isPresented: $showSaveError) {
             Button("OK", role: .cancel) { }
@@ -531,7 +557,6 @@ struct ResumeFormView: View {
                     link: cert.link.isEmpty ? nil : cert.link
                 )
             },
-            summary: summary.isEmpty ? nil : summary,
             languages: languages.isEmpty ? nil : languages.compactMap { lang -> Language? in
                 guard !lang.name.isEmpty else { return nil }
                 return Language(name: lang.name)
@@ -546,7 +571,8 @@ struct ResumeFormView: View {
                     link: section.link.isEmpty ? nil : section.link,
                     bullets: section.bullets.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
                 )
-            }
+            },
+            sectionOrder: sectionOrder
         )
     }
 
@@ -1256,7 +1282,7 @@ struct LanguageInput: Identifiable {
 }
 
 struct CustomSectionInput: Identifiable {
-    let id = UUID()
+    var id = UUID()
     var title = ""
     var provider = ""
     var provideDate = ""

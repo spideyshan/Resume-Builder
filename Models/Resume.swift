@@ -30,6 +30,8 @@ struct Resume: Identifiable, Codable, Equatable, Hashable {
     var languages: [Language]?
     var customSections: [CustomSection]?
     
+    var sectionOrder: [String]? // Order of sections by ResumeSection.id
+    
     var fullName: String {
         "\(firstName) \(lastName)".trimmingCharacters(in: .whitespaces)
     }
@@ -49,6 +51,23 @@ struct Resume: Identifiable, Codable, Equatable, Hashable {
         guard !github.isEmpty else { return nil }
         let urlString = github.hasPrefix("http") ? github : "https://\(github)"
         return URL(string: urlString)
+    }
+}
+
+enum ResumeSection: String, CaseIterable, Identifiable {
+    case summary = "Summary"
+    case education = "Education"
+    case experience = "Experience"
+    case projects = "Projects"
+    case certifications = "Certifications"
+    case skills = "Skills"
+    case languages = "Languages"
+    case custom = "Custom Sections"
+    
+    var id: String { rawValue }
+    
+    static var defaultOrder: [String] {
+        allCases.map { $0.id }
     }
 }
 

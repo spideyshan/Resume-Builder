@@ -95,3 +95,8 @@ ResumeCraft - Implemented Features
     - **Long-press context menu** on any resume with Duplicate and Delete options.
     - **Swipe-right** gesture reveals a teal Duplicate button.
     - Creates a full copy with a new ID and "(Copy)" appended to the title.
+
+16. **Section Reordering**:
+    - **Drag-and-Drop Interface**: Reorder resume sections (Experience, Education, Skills, etc.) via a simple list.
+    - **Dynamic Templates**: All templates (Classic, Simple, Modern) automatically adapt to your custom layout.
+    - **Custom PDF Export**: The generated PDF respects your exact section order.

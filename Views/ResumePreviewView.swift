@@ -226,254 +226,89 @@ struct ClassicTemplateView: View {
                 .frame(height: 2)
                 .padding(.bottom, 20)
             
-            // Professional Summary
-            if let summary = resume.summary, !summary.isEmpty {
-                Text(summary)
-                    .font(.system(size: 12))
-                    .italic()
-                    .foregroundColor(.gray)
-                    .lineSpacing(3)
-                    .padding(.bottom, 16)
-            }
-            
-            // Education
-            if !resume.education.isEmpty {
-                ClassicSection(title: "EDUCATION", accentColor: accentColor) {
-                    ForEach(resume.education) { edu in
-                        HStack(alignment: .top) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(edu.displayTitle)
-                                    .font(.system(size: 14, weight: .semibold))
-                                Text(edu.institution)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.gray)
-                            }
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 4) {
-                                Text(edu.year)
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.gray)
-                                if !edu.formattedScore.isEmpty {
-                                    Text(edu.formattedScore)
-                                        .font(.system(size: 11, weight: .medium))
-                                        .foregroundColor(accentColor)
-                                }
-                            }
-                        }
-                        .padding(.bottom, 12)
-                    }
+            ForEach(resume.sectionOrder ?? ResumeSection.defaultOrder, id: \.self) { sectionId in
+                switch sectionId {
+                case ResumeSection.summary.id: summarySection
+                case ResumeSection.education.id: educationSection
+                case ResumeSection.experience.id: experienceSection
+                case ResumeSection.projects.id: projectsSection
+                case ResumeSection.certifications.id: certificationsSection
+                case ResumeSection.skills.id: skillsSection
+                case ResumeSection.languages.id: languagesSection
+                case ResumeSection.custom.id: customSectionsSection
+                default: EmptyView()
                 }
             }
-            
-            // Experience
-            if !resume.experience.isEmpty {
-                ClassicSection(title: "EXPERIENCE", accentColor: accentColor) {
-                    ForEach(resume.experience) { exp in
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack(alignment: .top) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(exp.title)
-                                        .font(.system(size: 14, weight: .semibold))
-                                    Text(exp.company)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(accentColor)
-                                }
-                                Spacer()
-                                Text(exp.duration)
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.gray)
-                            }
-                            
-                            ForEach(exp.bullets, id: \.self) { bullet in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Circle()
-                                        .fill(accentColor)
-                                        .frame(width: 4, height: 4)
-                                        .padding(.top, 6)
-                                    Text(bullet)
-                                        .font(.system(size: 12))
-                                        .lineSpacing(2)
-                                }
+        }
+        .padding(28)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundColor(.black)
+    }
+
+    
+    // MARK: - Section Views
+    
+    @ViewBuilder var summarySection: some View {
+        if let summary = resume.summary, !summary.isEmpty {
+            Text(summary)
+                .font(.system(size: 12))
+                .italic()
+                .foregroundColor(.gray)
+                .lineSpacing(3)
+                .padding(.bottom, 16)
+        }
+    }
+    
+    @ViewBuilder var educationSection: some View {
+        if !resume.education.isEmpty {
+            ClassicSection(title: "EDUCATION", accentColor: accentColor) {
+                ForEach(resume.education) { edu in
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(edu.displayTitle)
+                                .font(.system(size: 14, weight: .semibold))
+                            Text(edu.institution)
+                                .font(.system(size: 12))
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text(edu.year)
+                                .font(.system(size: 11))
+                                .foregroundColor(.gray)
+                            if !edu.formattedScore.isEmpty {
+                                Text(edu.formattedScore)
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(accentColor)
                             }
                         }
-                        .padding(.bottom, 14)
                     }
+                    .padding(.bottom, 12)
                 }
             }
-            
-            // Projects
-            if !resume.projects.isEmpty {
-                ClassicSection(title: "PROJECTS", accentColor: accentColor) {
-                    ForEach(resume.projects) { project in
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                if project.hasValidLink, let url = project.url {
-                                    Link(destination: url) {
-                                        Text(project.name)
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundColor(.black)
-                                    }
-                                } else {
-                                    Text(project.name)
-                                        .font(.system(size: 14, weight: .semibold))
-                                }
-                                Spacer()
-                                if !project.tools.isEmpty {
-                                    Text(project.tools)
-                                        .font(.system(size: 10))
-                                        .foregroundColor(.gray)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 3)
-                                        .background(Color(.systemGray6))
-                                        .cornerRadius(4)
-                                }
-                            }
-                            
-                            ForEach(project.bullets, id: \.self) { bullet in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Circle()
-                                        .fill(accentColor)
-                                        .frame(width: 4, height: 4)
-                                        .padding(.top, 6)
-                                    Text(bullet)
-                                        .font(.system(size: 12))
-                                        .lineSpacing(2)
-                                }
-                            }
-                        }
-                        .padding(.bottom, 14)
-                    }
-                }
-            }
-            
-            // Certifications
-            if let certs = resume.certifications, !certs.isEmpty {
-                ClassicSection(title: "CERTIFICATIONS", accentColor: accentColor) {
-                    ForEach(certs) { cert in
+        }
+    }
+    
+    @ViewBuilder var experienceSection: some View {
+        if !resume.experience.isEmpty {
+            ClassicSection(title: "EXPERIENCE", accentColor: accentColor) {
+                ForEach(resume.experience) { exp in
+                    VStack(alignment: .leading, spacing: 6) {
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 2) {
-                                if cert.hasValidLink, let url = cert.url {
-                                    Link(destination: url) {
-                                        Text(cert.name)
-                                            .font(.system(size: 14, weight: .medium))
-                                            .foregroundColor(.black)
-                                    }
-                                } else {
-                                    Text(cert.name)
-                                        .font(.system(size: 14, weight: .medium))
-                                }
-                                Text(cert.issuer)
+                                Text(exp.title)
+                                    .font(.system(size: 14, weight: .semibold))
+                                Text(exp.company)
                                     .font(.system(size: 12))
-                                    .foregroundColor(.gray)
-                                
-                                HStack(spacing: 8) {
-                                    Text("Issued: \(cert.issueDate)")
-                                    if !cert.expiryDate.isEmpty {
-                                        Text("•")
-                                        Text("Expires: \(cert.expiryDate)")
-                                    }
-                                }
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
+                                    .foregroundColor(accentColor)
                             }
                             Spacer()
+                            Text(exp.duration)
+                                .font(.system(size: 11))
+                                .foregroundColor(.gray)
                         }
-                        .padding(.bottom, 8)
-                    }
-                }
-            }
-
-            // Skills
-            if !resume.skills.isEmpty {
-                ClassicSection(title: "SKILLS", accentColor: accentColor) {
-                    ForEach(SkillCategory.allCases) { category in
-                        if let skills = resume.skills[category], !skills.isEmpty {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(category.rawValue)
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundColor(accentColor)
-                                
-                                FlowLayout(spacing: 6) {
-                                    ForEach(skills, id: \.self) { skill in
-                                        Text(skill)
-                                            .font(.system(size: 11))
-                                            .padding(.horizontal, 10)
-                                            .padding(.vertical, 5)
-                                            .background(Color.white)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 4)
-                                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                            )
-                                            .cornerRadius(4)
-                                    }
-                                }
-                            }
-                            .padding(.bottom, 10)
-                        }
-                    }
-                }
-            }
-
-            // Languages
-            if let langs = resume.languages, !langs.isEmpty {
-                ClassicSection(title: "LANGUAGES", accentColor: accentColor) {
-                    FlowLayout(spacing: 8) {
-                        ForEach(langs) { lang in
-                            Text(lang.name)
-                                .font(.system(size: 12, weight: .medium))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Color.white)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                )
-                                .cornerRadius(4)
-                        }
-                    }
-                }
-            }
-
-            // Custom Sections
-            if let sections = resume.customSections, !sections.isEmpty {
-                ForEach(sections) { section in
-                    ClassicSection(title: section.title.uppercased(), accentColor: accentColor) {
-                        if let provider = section.provider, !provider.isEmpty {
-                            HStack(alignment: .top) {
-                                Text(provider)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.gray)
-                                Spacer()
-                                VStack(alignment: .trailing, spacing: 2) {
-                                    if let provideDate = section.provideDate, !provideDate.isEmpty {
-                                        Text(provideDate)
-                                            .font(.system(size: 10))
-                                            .foregroundColor(.secondary)
-                                    }
-                                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
-                                        Text("Expires: \(expiryDate)")
-                                            .font(.system(size: 10))
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                            }
-                        } else {
-                            let hasDate = (section.provideDate != nil && !(section.provideDate!.isEmpty)) || (section.expiryDate != nil && !(section.expiryDate!.isEmpty))
-                            if hasDate {
-                                HStack(spacing: 8) {
-                                    if let provideDate = section.provideDate, !provideDate.isEmpty {
-                                        Text(provideDate)
-                                    }
-                                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
-                                        Text("•")
-                                        Text("Expires: \(expiryDate)")
-                                    }
-                                }
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
-                            }
-                        }
-                        ForEach(section.bullets, id: \.self) { bullet in
+                        
+                        ForEach(exp.bullets, id: \.self) { bullet in
                             HStack(alignment: .top, spacing: 8) {
                                 Circle()
                                     .fill(accentColor)
@@ -485,17 +320,207 @@ struct ClassicTemplateView: View {
                             }
                         }
                     }
-                    .onTapGesture {
-                        if section.hasValidLink, let url = section.url {
-                            openURL(url)
+                    .padding(.bottom, 14)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var projectsSection: some View {
+        if !resume.projects.isEmpty {
+            ClassicSection(title: "PROJECTS", accentColor: accentColor) {
+                ForEach(resume.projects) { project in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            if project.hasValidLink, let url = project.url {
+                                Link(destination: url) {
+                                    Text(project.name)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.black)
+                                }
+                            } else {
+                                Text(project.name)
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            Spacer()
+                            if !project.tools.isEmpty {
+                                Text(project.tools)
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(4)
+                            }
                         }
+                        
+                        ForEach(project.bullets, id: \.self) { bullet in
+                            HStack(alignment: .top, spacing: 8) {
+                                Circle()
+                                    .fill(accentColor)
+                                    .frame(width: 4, height: 4)
+                                    .padding(.top, 6)
+                                Text(bullet)
+                                    .font(.system(size: 12))
+                                    .lineSpacing(2)
+                            }
+                        }
+                    }
+                    .padding(.bottom, 14)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var certificationsSection: some View {
+        if let certs = resume.certifications, !certs.isEmpty {
+            ClassicSection(title: "CERTIFICATIONS", accentColor: accentColor) {
+                ForEach(certs) { cert in
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            if cert.hasValidLink, let url = cert.url {
+                                Link(destination: url) {
+                                    Text(cert.name)
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.black)
+                                }
+                            } else {
+                                Text(cert.name)
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            Text(cert.issuer)
+                                .font(.system(size: 12))
+                                .foregroundColor(.gray)
+                            
+                            HStack(spacing: 8) {
+                                Text("Issued: \(cert.issueDate)")
+                                if !cert.expiryDate.isEmpty {
+                                    Text("•")
+                                    Text("Expires: \(cert.expiryDate)")
+                                }
+                            }
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.bottom, 8)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var skillsSection: some View {
+        if !resume.skills.isEmpty {
+            ClassicSection(title: "SKILLS", accentColor: accentColor) {
+                ForEach(SkillCategory.allCases) { category in
+                    if let skills = resume.skills[category], !skills.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(category.rawValue)
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(accentColor)
+                            
+                            FlowLayout(spacing: 6) {
+                                ForEach(skills, id: \.self) { skill in
+                                    Text(skill)
+                                        .font(.system(size: 11))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(Color.white)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                        )
+                                        .cornerRadius(4)
+                                }
+                            }
+                        }
+                        .padding(.bottom, 10)
                     }
                 }
             }
         }
-        .padding(28)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .foregroundColor(.black)
+    }
+    
+    @ViewBuilder var languagesSection: some View {
+        if let langs = resume.languages, !langs.isEmpty {
+            ClassicSection(title: "LANGUAGES", accentColor: accentColor) {
+                FlowLayout(spacing: 8) {
+                    ForEach(langs) { lang in
+                        Text(lang.name)
+                            .font(.system(size: 12, weight: .medium))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            )
+                            .cornerRadius(4)
+                    }
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var customSectionsSection: some View {
+        if let sections = resume.customSections, !sections.isEmpty {
+            ForEach(sections) { section in
+                ClassicSection(title: section.title.uppercased(), accentColor: accentColor) {
+                    if let provider = section.provider, !provider.isEmpty {
+                        HStack(alignment: .top) {
+                            Text(provider)
+                                .font(.system(size: 12))
+                                .foregroundColor(.gray)
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                    Text(provideDate)
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.secondary)
+                                }
+                                if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                    Text("Expires: \(expiryDate)")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                    } else {
+                        let hasDate = (section.provideDate != nil && !(section.provideDate!.isEmpty)) || (section.expiryDate != nil && !(section.expiryDate!.isEmpty))
+                        if hasDate {
+                            HStack(spacing: 8) {
+                                if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                    Text(provideDate)
+                                }
+                                if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                    Text("•")
+                                    Text("Expires: \(expiryDate)")
+                                }
+                            }
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                        }
+                    }
+                    ForEach(section.bullets, id: \.self) { bullet in
+                        HStack(alignment: .top, spacing: 8) {
+                            Circle()
+                            .fill(accentColor)
+                            .frame(width: 4, height: 4)
+                            .padding(.top, 6)
+                            Text(bullet)
+                                .font(.system(size: 12))
+                                .lineSpacing(2)
+                        }
+                    }
+                }
+                .onTapGesture {
+                    if section.hasValidLink, let url = section.url {
+                        openURL(url)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -575,236 +600,262 @@ struct SimpleTemplateView: View {
             .frame(maxWidth: .infinity)
             .padding(.bottom, 24)
             
-            // Professional Summary
-            if let summary = resume.summary, !summary.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(summary)
-                        .font(.system(size: 12))
-                        .foregroundColor(.gray)
-                        .lineSpacing(3)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(.bottom, 16)
-            }
-            
-            // Certifications
-            if let certs = resume.certifications, !certs.isEmpty {
-                SimpleSection(title: "Certifications", accentColor: accentColor) {
-                    ForEach(certs) { cert in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                if cert.hasValidLink, let url = cert.url {
-                                    Link(destination: url) {
-                                        Text(cert.name)
-                                            .font(.system(size: 13, weight: .medium))
-                                            .foregroundColor(.black)
-                                    }
-                                } else {
-                                    Text(cert.name)
-                                        .font(.system(size: 13, weight: .medium))
-                                }
-                                Text(cert.issuer)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.gray)
-                                
-                                HStack(spacing: 6) {
-                                    Text(cert.issueDate)
-                                    if !cert.expiryDate.isEmpty {
-                                        Text("-")
-                                        Text(cert.expiryDate)
-                                    }
-                                }
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
-                            }
-                            Spacer()
-                        }
-                        .padding(.bottom, 8)
-                    }
-                }
-            }
-            
-            // Skills
-            if !resume.skills.isEmpty {
-                SimpleSection(title: "Skills", accentColor: accentColor) {
-                    ForEach(SkillCategory.allCases) { category in
-                        if let skills = resume.skills[category], !skills.isEmpty {
-                            HStack(alignment: .top, spacing: 8) {
-                                Text("•")
-                                    .font(.system(size: 13, weight: .bold))
-                                Text("\(category.rawValue): ")
-                                    .font(.system(size: 13, weight: .semibold)) +
-                                Text(skills.joined(separator: ", "))
-                                    .font(.system(size: 13))
-                            }
-                            .padding(.bottom, 4)
-                        }
-                    }
-                }
-            }
-            
-            // Experience
-            if !resume.experience.isEmpty {
-                SimpleSection(title: "Experience", accentColor: accentColor) {
-                    ForEach(resume.experience) { exp in
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack(alignment: .top) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(exp.company)
-                                        .font(.system(size: 14, weight: .semibold))
-                                    Text(exp.title)
-                                        .font(.system(size: 13))
-                                        .italic()
-                                }
-                                Spacer()
-                                Text(exp.duration)
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.gray)
-                            }
-                            
-                            ForEach(exp.bullets, id: \.self) { bullet in
-                                Text(bullet)
-                                    .font(.system(size: 12))
-                                    .padding(.leading, 8)
-                            }
-                        }
-                        .padding(.bottom, 14)
-                    }
-                }
-            }
-            
-            // Projects
-            if !resume.projects.isEmpty {
-                SimpleSection(title: "Projects", accentColor: accentColor) {
-                    ForEach(resume.projects) { project in
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                if project.hasValidLink, let url = project.url {
-                                    Link(destination: url) {
-                                        Text(project.name)
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundColor(.black)
-                                    }
-                                } else {
-                                    Text(project.name)
-                                        .font(.system(size: 14, weight: .semibold))
-                                }
-                                if !project.tools.isEmpty {
-                                    Text("(\(project.tools))")
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.gray)
-                                }
-                                Spacer()
-                            }
-                            
-                            ForEach(project.bullets, id: \.self) { bullet in
-                                Text("• \(bullet)")
-                                    .font(.system(size: 12))
-                            }
-                        }
-                        .padding(.bottom, 12)
-                    }
-                }
-            }
-            
-            // Education
-            if !resume.education.isEmpty {
-                SimpleSection(title: "Education", accentColor: accentColor) {
-                    ForEach(resume.education) { edu in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(edu.displayTitle)
-                                    .font(.system(size: 13, weight: .medium))
-                                Text(edu.institution)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.gray)
-                            }
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text(edu.year)
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.gray)
-                                if !edu.formattedScore.isEmpty {
-                                    Text(edu.formattedScore)
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                        }
-                        .padding(.bottom, 8)
-                    }
-                }
-            }
-
-            // Languages
-            if let langs = resume.languages, !langs.isEmpty {
-                SimpleSection(title: "Languages", accentColor: accentColor) {
-                    HStack(alignment: .top, spacing: 8) {
-                        Text("•")
-                            .font(.system(size: 13, weight: .bold))
-                        Text(langs.map { $0.name }.joined(separator: ", "))
-                            .font(.system(size: 13))
-                    }
-                }
-            }
-
-            // Custom Sections
-            if let sections = resume.customSections, !sections.isEmpty {
-                ForEach(sections) { section in
-                    SimpleSection(title: section.title, accentColor: accentColor) {
-                        if let provider = section.provider, !provider.isEmpty {
-                            HStack {
-                                Text(provider)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.gray)
-                                Spacer()
-                                HStack(spacing: 6) {
-                                    if let provideDate = section.provideDate, !provideDate.isEmpty {
-                                        Text(provideDate)
-                                    }
-                                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
-                                        Text("-")
-                                        Text(expiryDate)
-                                    }
-                                }
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
-                            }
-                        } else {
-                            let hasDate = (section.provideDate != nil && !(section.provideDate!.isEmpty)) || (section.expiryDate != nil && !(section.expiryDate!.isEmpty))
-                            if hasDate {
-                                HStack(spacing: 6) {
-                                    if let provideDate = section.provideDate, !provideDate.isEmpty {
-                                        Text(provideDate)
-                                    }
-                                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
-                                        Text("-")
-                                        Text(expiryDate)
-                                    }
-                                }
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
-                            }
-                        }
-                        ForEach(section.bullets, id: \.self) { bullet in
-                            Text("• \(bullet)")
-                                .font(.system(size: 12))
-                        }
-                    }
-                    .onTapGesture {
-                        if section.hasValidLink, let url = section.url {
-                            openURL(url)
-                        }
-                    }
+            // Sections
+            ForEach(resume.sectionOrder ?? ResumeSection.defaultOrder, id: \.self) { sectionId in
+                switch sectionId {
+                case ResumeSection.summary.id: summarySection
+                case ResumeSection.education.id: educationSection
+                case ResumeSection.experience.id: experienceSection
+                case ResumeSection.projects.id: projectsSection
+                case ResumeSection.certifications.id: certificationsSection
+                case ResumeSection.skills.id: skillsSection
+                case ResumeSection.languages.id: languagesSection
+                case ResumeSection.custom.id: customSectionsSection
+                default: EmptyView()
                 }
             }
         }
         .padding(28)
         .frame(maxWidth: .infinity)
         .foregroundColor(.black)
+        }
+    
+    // MARK: - Section Views
+    
+    @ViewBuilder var summarySection: some View {
+        if let summary = resume.summary, !summary.isEmpty {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(summary)
+                    .font(.system(size: 12))
+                    .foregroundColor(.gray)
+                    .lineSpacing(3)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.bottom, 16)
+        }
+    }
+    
+    @ViewBuilder var certificationsSection: some View {
+        if let certs = resume.certifications, !certs.isEmpty {
+            SimpleSection(title: "Certifications", accentColor: accentColor) {
+                ForEach(certs) { cert in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            if cert.hasValidLink, let url = cert.url {
+                                Link(destination: url) {
+                                    Text(cert.name)
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundColor(.black)
+                                }
+                            } else {
+                                Text(cert.name)
+                                    .font(.system(size: 13, weight: .medium))
+                            }
+                            Text(cert.issuer)
+                                .font(.system(size: 12))
+                                .foregroundColor(.gray)
+                            
+                            HStack(spacing: 6) {
+                                Text(cert.issueDate)
+                                if !cert.expiryDate.isEmpty {
+                                    Text("-")
+                                    Text(cert.expiryDate)
+                                }
+                            }
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.bottom, 8)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var skillsSection: some View {
+        if !resume.skills.isEmpty {
+            SimpleSection(title: "Skills", accentColor: accentColor) {
+                ForEach(SkillCategory.allCases) { category in
+                    if let skills = resume.skills[category], !skills.isEmpty {
+                        HStack(alignment: .top, spacing: 8) {
+                            Text("•")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("\(category.rawValue): ")
+                                .font(.system(size: 13, weight: .semibold)) +
+                            Text(skills.joined(separator: ", "))
+                                .font(.system(size: 13))
+                        }
+                        .padding(.bottom, 4)
+                    }
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var experienceSection: some View {
+        if !resume.experience.isEmpty {
+            SimpleSection(title: "Experience", accentColor: accentColor) {
+                ForEach(resume.experience) { exp in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(exp.company)
+                                    .font(.system(size: 14, weight: .semibold))
+                                Text(exp.title)
+                                    .font(.system(size: 13))
+                                    .italic()
+                            }
+                            Spacer()
+                            Text(exp.duration)
+                                .font(.system(size: 11))
+                                .foregroundColor(.gray)
+                        }
+                        
+                        ForEach(exp.bullets, id: \.self) { bullet in
+                            Text(bullet)
+                                .font(.system(size: 12))
+                                .padding(.leading, 8)
+                        }
+                    }
+                    .padding(.bottom, 14)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var projectsSection: some View {
+        if !resume.projects.isEmpty {
+            SimpleSection(title: "Projects", accentColor: accentColor) {
+                ForEach(resume.projects) { project in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            if project.hasValidLink, let url = project.url {
+                                Link(destination: url) {
+                                    Text(project.name)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.black)
+                                }
+                            } else {
+                                Text(project.name)
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            if !project.tools.isEmpty {
+                                Text("(\(project.tools))")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.gray)
+                            }
+                            Spacer()
+                        }
+                        
+                        ForEach(project.bullets, id: \.self) { bullet in
+                            Text("• \(bullet)")
+                                .font(.system(size: 12))
+                        }
+                    }
+                    .padding(.bottom, 12)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var educationSection: some View {
+        if !resume.education.isEmpty {
+            SimpleSection(title: "Education", accentColor: accentColor) {
+                ForEach(resume.education) { edu in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(edu.displayTitle)
+                                .font(.system(size: 13, weight: .medium))
+                            Text(edu.institution)
+                                .font(.system(size: 12))
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(edu.year)
+                                .font(.system(size: 11))
+                                .foregroundColor(.gray)
+                            if !edu.formattedScore.isEmpty {
+                                Text(edu.formattedScore)
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    }
+                    .padding(.bottom, 8)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var languagesSection: some View {
+        if let langs = resume.languages, !langs.isEmpty {
+            SimpleSection(title: "Languages", accentColor: accentColor) {
+                HStack(alignment: .top, spacing: 8) {
+                    Text("•")
+                        .font(.system(size: 13, weight: .bold))
+                    Text(langs.map { $0.name }.joined(separator: ", "))
+                        .font(.system(size: 13))
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var customSectionsSection: some View {
+        if let sections = resume.customSections, !sections.isEmpty {
+            ForEach(sections) { section in
+                SimpleSection(title: section.title, accentColor: accentColor) {
+                    if let provider = section.provider, !provider.isEmpty {
+                        HStack {
+                            Text(provider)
+                                .font(.system(size: 12))
+                                .foregroundColor(.gray)
+                            Spacer()
+                            HStack(spacing: 6) {
+                                if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                    Text(provideDate)
+                                }
+                                if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                    Text("-")
+                                    Text(expiryDate)
+                                }
+                            }
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                        }
+                    } else {
+                        let hasDate = (section.provideDate != nil && !(section.provideDate!.isEmpty)) || (section.expiryDate != nil && !(section.expiryDate!.isEmpty))
+                        if hasDate {
+                            HStack(spacing: 6) {
+                                if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                    Text(provideDate)
+                                }
+                                if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                    Text("-")
+                                    Text(expiryDate)
+                                }
+                            }
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                        }
+                    }
+                    ForEach(section.bullets, id: \.self) { bullet in
+                        Text("• \(bullet)")
+                            .font(.system(size: 12))
+                    }
+                }
+                .onTapGesture {
+                    if section.hasValidLink, let url = section.url {
+                        openURL(url)
+                    }
+                }
+            }
+        }
     }
 }
+
 
 struct SimpleSection<Content: View>: View {
     let title: String
@@ -922,285 +973,307 @@ struct ModernTemplateView: View {
             
             // Content
             VStack(alignment: .leading, spacing: 20) {
-                // Professional Summary
-                if let summary = resume.summary, !summary.isEmpty {
-                    Text(summary)
-                        .font(.system(size: 12))
-                        .foregroundColor(.gray)
-                        .lineSpacing(3)
-                        .padding(.bottom, 4)
+            ForEach(resume.sectionOrder ?? ResumeSection.defaultOrder, id: \.self) { sectionId in
+                switch sectionId {
+                case ResumeSection.summary.id: summarySection
+                case ResumeSection.education.id: educationSection
+                case ResumeSection.experience.id: experienceSection
+                case ResumeSection.projects.id: projectsSection
+                case ResumeSection.certifications.id: certificationsSection
+                case ResumeSection.skills.id: skillsSection
+                case ResumeSection.languages.id: languagesSection
+                case ResumeSection.custom.id: customSectionsSection
+                default: EmptyView()
                 }
-                
-                // Experience
-                if !resume.experience.isEmpty {
-                    ModernSection(title: "EXPERIENCE", accentColor: accentColor) {
-                        ForEach(resume.experience) { exp in
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack(alignment: .top) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(exp.title)
-                                            .font(.system(size: 15, weight: .semibold))
-                                        Text(exp.company)
-                                            .font(.system(size: 12))
-                                            .foregroundColor(accentColor)
-                                    }
-                                    Spacer()
-                                    Text(exp.duration)
-                                        .font(.system(size: 11))
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(lightAccent)
-                                        .cornerRadius(4)
-                                }
-                                
-                                ForEach(exp.bullets, id: \.self) { bullet in
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Image(systemName: "arrow.right")
-                                            .font(.system(size: 8))
-                                            .foregroundColor(accentColor)
-                                            .padding(.top, 4)
-                                        Text(bullet)
-                                            .font(.system(size: 12))
-                                    }
-                                }
-                            }
-                            .padding(.bottom, 14)
-                        }
-                    }
-                }
-                
-                // Projects
-                if !resume.projects.isEmpty {
-                    ModernSection(title: "PROJECTS", accentColor: accentColor) {
-                        ForEach(resume.projects) { project in
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack {
-                                    if project.hasValidLink, let url = project.url {
-                                        Link(destination: url) {
-                                            Text(project.name)
-                                                .font(.system(size: 15, weight: .semibold))
-                                                .foregroundColor(.black)
-                                        }
-                                    } else {
-                                        Text(project.name)
-                                            .font(.system(size: 15, weight: .semibold))
-                                    }
-                                    Spacer()
-                                    if !project.tools.isEmpty {
-                                        Text(project.tools)
-                                            .font(.system(size: 10))
-                                            .foregroundColor(accentColor)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 3)
-                                            .background(lightAccent)
-                                            .cornerRadius(4)
-                                    }
-                                }
-                                
-                                ForEach(project.bullets, id: \.self) { bullet in
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Image(systemName: "arrow.right")
-                                            .font(.system(size: 8))
-                                            .foregroundColor(accentColor)
-                                            .padding(.top, 4)
-                                        Text(bullet)
-                                            .font(.system(size: 12))
-                                    }
-                                }
-                            }
-                            .padding(.bottom, 12)
-                        }
-                    }
-                }
-                
-                // Certifications
-                if let certs = resume.certifications, !certs.isEmpty {
-                    ModernSection(title: "CERTIFICATIONS", accentColor: accentColor) {
-                        ForEach(certs) { cert in
-                            HStack(alignment: .top) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    if cert.hasValidLink, let url = cert.url {
-                                        Link(destination: url) {
-                                            Text(cert.name)
-                                                .font(.system(size: 13, weight: .medium))
-                                                .foregroundColor(accentColor)
-                                                .underline()
-                                        }
-                                    } else {
-                                        Text(cert.name)
-                                            .font(.system(size: 13, weight: .medium))
-                                    }
-                                    Text(cert.issuer)
-                                        .font(.system(size: 11))
-                                        .foregroundColor(accentColor)
-                                    
-                                    HStack(spacing: 6) {
-                                        Text(cert.issueDate)
-                                        if !cert.expiryDate.isEmpty {
-                                            Text("→")
-                                            Text(cert.expiryDate)
-                                        }
-                                    }
-                                    .font(.system(size: 10))
-                                    .foregroundColor(accentColor.opacity(0.8))
-                                }
-                                Spacer()
-                            }
-                            .padding(.bottom, 8)
-                        }
-                    }
-                }
-
-                // Languages
-                if let langs = resume.languages, !langs.isEmpty {
-                    ModernSection(title: "LANGUAGES", accentColor: accentColor) {
-                        FlowLayout(spacing: 8) {
-                            ForEach(langs) { lang in
-                                Text(lang.name)
-                                    .font(.system(size: 12, weight: .medium))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(lightAccent)
-                                    .cornerRadius(4)
-                            }
-                        }
-                    }
-                }
-
-                // Custom Sections
-                if let sections = resume.customSections, !sections.isEmpty {
-                    ForEach(sections) { section in
-                        ModernSection(title: section.title.uppercased(), accentColor: accentColor) {
-                            if let provider = section.provider, !provider.isEmpty {
-                                HStack {
-                                    Text(provider)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(accentColor)
-                                    Spacer()
-                                    HStack(spacing: 6) {
-                                        if let provideDate = section.provideDate, !provideDate.isEmpty {
-                                            Text(provideDate)
-                                        }
-                                        if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
-                                            Text("-")
-                                            Text(expiryDate)
-                                        }
-                                    }
-                                    .font(.system(size: 10))
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Color(red: 0.9, green: 1.0, blue: 0.98))
-                                    .cornerRadius(3)
-                                    .foregroundColor(Color(red: 0.14, green: 0.31, blue: 0.32))
-                                }
-                            } else {
-                                let hasDate = (section.provideDate != nil && !(section.provideDate!.isEmpty)) || (section.expiryDate != nil && !(section.expiryDate!.isEmpty))
-                                if hasDate {
-                                    HStack(spacing: 6) {
-                                        if let provideDate = section.provideDate, !provideDate.isEmpty {
-                                            Text(provideDate)
-                                        }
-                                        if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
-                                            Text("-")
-                                            Text(expiryDate)
-                                        }
-                                    }
-                                    .font(.system(size: 10))
-                                    .foregroundColor(accentColor)
-                                }
-                            }
-                            ForEach(section.bullets, id: \.self) { bullet in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Image(systemName: "arrow.right")
-                                        .font(.system(size: 8))
-                                        .foregroundColor(accentColor)
-                                        .padding(.top, 4)
-                                    Text(bullet)
-                                        .font(.system(size: 12))
-                                }
-                            }
-                        }
-                        .onTapGesture {
-                            if section.hasValidLink, let url = section.url {
-                                openURL(url)
-                            }
-                        }
-                    }
-                }
-
-                // Bottom row
-                HStack(alignment: .top, spacing: 32) {
-                    // Education
-                    if !resume.education.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack(spacing: 6) {
-                                Rectangle()
-                                    .fill(accentColor)
-                                    .frame(width: 3)
-                                Text("EDUCATION")
-                                    .font(.system(size: 12, weight: .bold))
-                                    .tracking(1.5)
-                                    .foregroundColor(accentColor)
-                            }
-                            .frame(height: 16)
-                            
-                            ForEach(resume.education) { edu in
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(edu.displayTitle)
-                                        .font(.system(size: 13, weight: .medium))
-                                    Text(edu.institution)
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.gray)
-                                    HStack(spacing: 8) {
-                                        Text(edu.year)
-                                        if !edu.formattedScore.isEmpty {
-                                            Text("•")
-                                            Text(edu.formattedScore)
-                                        }
-                                    }
-                                    .font(.system(size: 10))
-                                    .foregroundColor(accentColor)
-                                }
-                                .padding(.bottom, 8)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    
-                    // Skills
-                    if !resume.skills.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack(spacing: 6) {
-                                Rectangle()
-                                    .fill(accentColor)
-                                    .frame(width: 3)
-                                Text("SKILLS")
-                                    .font(.system(size: 12, weight: .bold))
-                                    .tracking(1.5)
-                                    .foregroundColor(accentColor)
-                            }
-                            .frame(height: 16)
-                            
-                            ForEach(SkillCategory.allCases) { category in
-                                if let skills = resume.skills[category], !skills.isEmpty {
-                                    VStack(alignment: .leading, spacing: 3) {
-                                        Text(category.rawValue)
-                                            .font(.system(size: 10, weight: .medium))
-                                            .foregroundColor(.gray)
-                                        Text(skills.joined(separator: " • "))
-                                            .font(.system(size: 11))
-                                    }
-                                    .padding(.bottom, 6)
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
+            }
             }
             .padding(24)
         }
         .foregroundColor(.black)
+    }
+
+    
+    // MARK: - Section Views
+    
+    @ViewBuilder var summarySection: some View {
+        if let summary = resume.summary, !summary.isEmpty {
+            Text(summary)
+                .font(.system(size: 12))
+                .foregroundColor(.gray)
+                .lineSpacing(3)
+                .padding(.bottom, 4)
+        }
+    }
+    
+    @ViewBuilder var experienceSection: some View {
+        if !resume.experience.isEmpty {
+            ModernSection(title: "EXPERIENCE", accentColor: accentColor) {
+                ForEach(resume.experience) { exp in
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(exp.title)
+                                    .font(.system(size: 15, weight: .semibold))
+                                Text(exp.company)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(accentColor)
+                            }
+                            Spacer()
+                            Text(exp.duration)
+                                .font(.system(size: 11))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(lightAccent)
+                                .cornerRadius(4)
+                        }
+                        
+                        ForEach(exp.bullets, id: \.self) { bullet in
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 8))
+                                    .foregroundColor(accentColor)
+                                    .padding(.top, 4)
+                                Text(bullet)
+                                    .font(.system(size: 12))
+                            }
+                        }
+                    }
+                    .padding(.bottom, 14)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var projectsSection: some View {
+        if !resume.projects.isEmpty {
+            ModernSection(title: "PROJECTS", accentColor: accentColor) {
+                ForEach(resume.projects) { project in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            if project.hasValidLink, let url = project.url {
+                                Link(destination: url) {
+                                    Text(project.name)
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundColor(.black)
+                                }
+                            } else {
+                                Text(project.name)
+                                    .font(.system(size: 15, weight: .semibold))
+                            }
+                            Spacer()
+                            if !project.tools.isEmpty {
+                                Text(project.tools)
+                                    .font(.system(size: 10))
+                                    .foregroundColor(accentColor)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(lightAccent)
+                                    .cornerRadius(4)
+                            }
+                        }
+                        
+                        ForEach(project.bullets, id: \.self) { bullet in
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 8))
+                                    .foregroundColor(accentColor)
+                                    .padding(.top, 4)
+                                Text(bullet)
+                                    .font(.system(size: 12))
+                            }
+                        }
+                    }
+                    .padding(.bottom, 12)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var certificationsSection: some View {
+        if let certs = resume.certifications, !certs.isEmpty {
+            ModernSection(title: "CERTIFICATIONS", accentColor: accentColor) {
+                ForEach(certs) { cert in
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            if cert.hasValidLink, let url = cert.url {
+                                Link(destination: url) {
+                                    Text(cert.name)
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundColor(accentColor)
+                                        .underline()
+                                }
+                            } else {
+                                Text(cert.name)
+                                    .font(.system(size: 13, weight: .medium))
+                            }
+                            Text(cert.issuer)
+                                .font(.system(size: 11))
+                                .foregroundColor(accentColor)
+                            
+                            HStack(spacing: 6) {
+                                Text(cert.issueDate)
+                                if !cert.expiryDate.isEmpty {
+                                    Text("→")
+                                    Text(cert.expiryDate)
+                                }
+                            }
+                            .font(.system(size: 10))
+                            .foregroundColor(accentColor.opacity(0.8))
+                        }
+                        Spacer()
+                    }
+                    .padding(.bottom, 8)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var languagesSection: some View {
+        if let langs = resume.languages, !langs.isEmpty {
+            ModernSection(title: "LANGUAGES", accentColor: accentColor) {
+                FlowLayout(spacing: 8) {
+                    ForEach(langs) { lang in
+                        Text(lang.name)
+                            .font(.system(size: 12, weight: .medium))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(lightAccent)
+                            .cornerRadius(4)
+                    }
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder var educationSection: some View {
+        if !resume.education.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 6) {
+                    Rectangle()
+                        .fill(accentColor)
+                        .frame(width: 3)
+                    Text("EDUCATION")
+                        .font(.system(size: 12, weight: .bold))
+                        .tracking(1.5)
+                        .foregroundColor(accentColor)
+                }
+                .frame(height: 16)
+                
+                ForEach(resume.education) { edu in
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(edu.displayTitle)
+                            .font(.system(size: 13, weight: .medium))
+                        Text(edu.institution)
+                            .font(.system(size: 11))
+                            .foregroundColor(.gray)
+                        HStack(spacing: 8) {
+                            Text(edu.year)
+                            if !edu.formattedScore.isEmpty {
+                                Text("•")
+                                Text(edu.formattedScore)
+                            }
+                        }
+                        .font(.system(size: 10))
+                        .foregroundColor(accentColor)
+                    }
+                    .padding(.bottom, 8)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+    
+    @ViewBuilder var skillsSection: some View {
+        if !resume.skills.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 6) {
+                    Rectangle()
+                        .fill(accentColor)
+                        .frame(width: 3)
+                    Text("SKILLS")
+                        .font(.system(size: 12, weight: .bold))
+                        .tracking(1.5)
+                        .foregroundColor(accentColor)
+                }
+                .frame(height: 16)
+                
+                ForEach(SkillCategory.allCases) { category in
+                    if let skills = resume.skills[category], !skills.isEmpty {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(category.rawValue)
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.gray)
+                            Text(skills.joined(separator: " • "))
+                                .font(.system(size: 11))
+                        }
+                        .padding(.bottom, 6)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+    
+    @ViewBuilder var customSectionsSection: some View {
+        if let sections = resume.customSections, !sections.isEmpty {
+            ForEach(sections) { section in
+                ModernSection(title: section.title.uppercased(), accentColor: accentColor) {
+                    if let provider = section.provider, !provider.isEmpty {
+                        HStack {
+                            Text(provider)
+                                .font(.system(size: 12))
+                                .foregroundColor(accentColor)
+                            Spacer()
+                            HStack(spacing: 6) {
+                                if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                    Text(provideDate)
+                                }
+                                if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                    Text("-")
+                                    Text(expiryDate)
+                                }
+                            }
+                            .font(.system(size: 10))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color(red: 0.9, green: 1.0, blue: 0.98))
+                            .cornerRadius(3)
+                            .foregroundColor(Color(red: 0.14, green: 0.31, blue: 0.32))
+                        }
+                    } else {
+                        let hasDate = (section.provideDate != nil && !(section.provideDate!.isEmpty)) || (section.expiryDate != nil && !(section.expiryDate!.isEmpty))
+                        if hasDate {
+                            HStack(spacing: 6) {
+                                if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                    Text(provideDate)
+                                }
+                                if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                    Text("-")
+                                    Text(expiryDate)
+                                }
+                            }
+                            .font(.system(size: 10))
+                            .foregroundColor(accentColor)
+                        }
+                    }
+                    ForEach(section.bullets, id: \.self) { bullet in
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 8))
+                                .foregroundColor(accentColor)
+                                .padding(.top, 4)
+                            Text(bullet)
+                                .font(.system(size: 12))
+                        }
+                    }
+                }
+                .onTapGesture {
+                    if section.hasValidLink, let url = section.url {
+                        openURL(url)
+                    }
+                }
+            }
+        }
     }
 }
 
