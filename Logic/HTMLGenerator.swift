@@ -271,6 +271,24 @@ struct HTMLGenerator {
                 } else {
                     html += "<div class='section-title'>\(section.title.uppercased())</div>"
                 }
+                if let provider = section.provider, !provider.isEmpty {
+                    var metaLine = "<div class='entry'><div class='entry-header'><div class='subtitle' style='color:#555;'>\(provider)</div>"
+                    var dateParts: [String] = []
+                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append("Expires: \(expiryDate)") }
+                    if !dateParts.isEmpty {
+                        metaLine += "<div class='date'>\(dateParts.joined(separator: " - "))</div>"
+                    }
+                    metaLine += "</div></div>"
+                    html += metaLine
+                } else {
+                    var dateParts: [String] = []
+                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append("Expires: \(expiryDate)") }
+                    if !dateParts.isEmpty {
+                        html += "<div class='cert-date'>\(dateParts.joined(separator: " - "))</div>"
+                    }
+                }
                 html += "<ul>"
                 for bullet in section.bullets {
                     html += "<li>\(bullet)</li>"
@@ -418,6 +436,24 @@ struct HTMLGenerator {
                     html += "<div class='section-title'><a href='\(url.absoluteString)' style='color:inherit; text-decoration:none;'>\(section.title)</a></div>"
                 } else {
                     html += "<div class='section-title'>\(section.title)</div>"
+                }
+                if let provider = section.provider, !provider.isEmpty {
+                    var metaLine = "<div class='entry'><div class='entry-header'><div class='subtitle'>\(provider)</div>"
+                    var dateParts: [String] = []
+                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
+                    if !dateParts.isEmpty {
+                        metaLine += "<div class='date'>\(dateParts.joined(separator: " - "))</div>"
+                    }
+                    metaLine += "</div></div>"
+                    html += metaLine
+                } else {
+                    var dateParts: [String] = []
+                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
+                    if !dateParts.isEmpty {
+                        html += "<div class='cert-date'>\(dateParts.joined(separator: " - "))</div>"
+                    }
                 }
                 html += "<ul>"
                 for bullet in section.bullets {
@@ -591,6 +627,24 @@ struct HTMLGenerator {
                     html += "<div class='section-title'><a href='\(url.absoluteString)' style='color:inherit; text-decoration:none;'>\(section.title.uppercased())</a></div>"
                 } else {
                     html += "<div class='section-title'>\(section.title.uppercased())</div>"
+                }
+                if let provider = section.provider, !provider.isEmpty {
+                    var metaLine = "<div class='entry'><div class='entry-header'><div class='subtitle'>\(provider)</div>"
+                    var dateParts: [String] = []
+                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
+                    if !dateParts.isEmpty {
+                        metaLine += "<div class='date-badge'>\(dateParts.joined(separator: " - "))</div>"
+                    }
+                    metaLine += "</div></div>"
+                    html += metaLine
+                } else {
+                    var dateParts: [String] = []
+                    if let provideDate = section.provideDate, !provideDate.isEmpty { dateParts.append(provideDate) }
+                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty { dateParts.append(expiryDate) }
+                    if !dateParts.isEmpty {
+                        html += "<div class='cert-date'>\(dateParts.joined(separator: " - "))</div>"
+                    }
                 }
                 for bullet in section.bullets {
                     html += """

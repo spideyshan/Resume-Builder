@@ -432,6 +432,41 @@ struct ClassicTemplateView: View {
             if let sections = resume.customSections, !sections.isEmpty {
                 ForEach(sections) { section in
                     ClassicSection(title: section.title.uppercased(), accentColor: accentColor) {
+                        if let provider = section.provider, !provider.isEmpty {
+                            HStack(alignment: .top) {
+                                Text(provider)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.gray)
+                                Spacer()
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                        Text(provideDate)
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.secondary)
+                                    }
+                                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                        Text("Expires: \(expiryDate)")
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                        } else {
+                            let hasDate = (section.provideDate != nil && !(section.provideDate!.isEmpty)) || (section.expiryDate != nil && !(section.expiryDate!.isEmpty))
+                            if hasDate {
+                                HStack(spacing: 8) {
+                                    if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                        Text(provideDate)
+                                    }
+                                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                        Text("•")
+                                        Text("Expires: \(expiryDate)")
+                                    }
+                                }
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                            }
+                        }
                         ForEach(section.bullets, id: \.self) { bullet in
                             HStack(alignment: .top, spacing: 8) {
                                 Circle()
@@ -711,6 +746,40 @@ struct SimpleTemplateView: View {
             if let sections = resume.customSections, !sections.isEmpty {
                 ForEach(sections) { section in
                     SimpleSection(title: section.title) {
+                        if let provider = section.provider, !provider.isEmpty {
+                            HStack {
+                                Text(provider)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.gray)
+                                Spacer()
+                                HStack(spacing: 6) {
+                                    if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                        Text(provideDate)
+                                    }
+                                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                        Text("-")
+                                        Text(expiryDate)
+                                    }
+                                }
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                            }
+                        } else {
+                            let hasDate = (section.provideDate != nil && !(section.provideDate!.isEmpty)) || (section.expiryDate != nil && !(section.expiryDate!.isEmpty))
+                            if hasDate {
+                                HStack(spacing: 6) {
+                                    if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                        Text(provideDate)
+                                    }
+                                    if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                        Text("-")
+                                        Text(expiryDate)
+                                    }
+                                }
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                            }
+                        }
                         ForEach(section.bullets, id: \.self) { bullet in
                             Text("• \(bullet)")
                                 .font(.system(size: 12))
@@ -991,6 +1060,44 @@ struct ModernTemplateView: View {
                 if let sections = resume.customSections, !sections.isEmpty {
                     ForEach(sections) { section in
                         ModernSection(title: section.title.uppercased(), accentColor: accentColor) {
+                            if let provider = section.provider, !provider.isEmpty {
+                                HStack {
+                                    Text(provider)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(accentColor)
+                                    Spacer()
+                                    HStack(spacing: 6) {
+                                        if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                            Text(provideDate)
+                                        }
+                                        if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                            Text("-")
+                                            Text(expiryDate)
+                                        }
+                                    }
+                                    .font(.system(size: 10))
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color(red: 0.9, green: 1.0, blue: 0.98))
+                                    .cornerRadius(3)
+                                    .foregroundColor(Color(red: 0.14, green: 0.31, blue: 0.32))
+                                }
+                            } else {
+                                let hasDate = (section.provideDate != nil && !(section.provideDate!.isEmpty)) || (section.expiryDate != nil && !(section.expiryDate!.isEmpty))
+                                if hasDate {
+                                    HStack(spacing: 6) {
+                                        if let provideDate = section.provideDate, !provideDate.isEmpty {
+                                            Text(provideDate)
+                                        }
+                                        if let expiryDate = section.expiryDate, !expiryDate.isEmpty {
+                                            Text("-")
+                                            Text(expiryDate)
+                                        }
+                                    }
+                                    .font(.system(size: 10))
+                                    .foregroundColor(accentColor)
+                                }
+                            }
                             ForEach(section.bullets, id: \.self) { bullet in
                                 HStack(alignment: .top, spacing: 8) {
                                     Image(systemName: "arrow.right")

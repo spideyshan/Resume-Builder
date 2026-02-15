@@ -350,6 +350,9 @@ struct Language: Identifiable, Hashable, Codable {
 struct CustomSection: Identifiable, Hashable, Codable {
     let id = UUID()
     var title: String
+    var provider: String?
+    var provideDate: String?
+    var expiryDate: String?
     var link: String?
     var bullets: [String]
     

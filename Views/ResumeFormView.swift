@@ -118,7 +118,7 @@ struct ResumeFormView: View {
             
             // Map Custom Sections
             customSections = (resume.customSections ?? []).map { section in
-                CustomSectionInput(title: section.title, link: section.link ?? "", bullets: section.bullets.joined(separator: "\n"))
+                CustomSectionInput(title: section.title, provider: section.provider ?? "", provideDate: section.provideDate ?? "", expiryDate: section.expiryDate ?? "", link: section.link ?? "", bullets: section.bullets.joined(separator: "\n"))
             }
         } else {
             // New Resume - Generate ID once so it persists across saves
@@ -540,6 +540,9 @@ struct ResumeFormView: View {
                 guard !section.title.isEmpty else { return nil }
                 return CustomSection(
                     title: section.title,
+                    provider: section.provider.isEmpty ? nil : section.provider,
+                    provideDate: section.provideDate.isEmpty ? nil : section.provideDate,
+                    expiryDate: section.expiryDate.isEmpty ? nil : section.expiryDate,
                     link: section.link.isEmpty ? nil : section.link,
                     bullets: section.bullets.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
                 )
@@ -1255,6 +1258,9 @@ struct LanguageInput: Identifiable {
 struct CustomSectionInput: Identifiable {
     let id = UUID()
     var title = ""
+    var provider = ""
+    var provideDate = ""
+    var expiryDate = ""
     var link = ""
     var bullets = ""
 }
@@ -1318,6 +1324,26 @@ struct CustomSectionCard: View {
                 .padding(10)
                 .background(Color(.systemGray6))
                 .cornerRadius(6)
+            
+            TextField("Provider / Organization (optional)", text: $section.provider)
+                .font(.system(size: 14))
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(6)
+            
+            HStack(spacing: 10) {
+                TextField("Date: Jan 2023", text: $section.provideDate)
+                    .font(.system(size: 14))
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(6)
+                
+                TextField("Expiry (optional)", text: $section.expiryDate)
+                    .font(.system(size: 14))
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(6)
+            }
             
             TextField("Link (optional)", text: $section.link)
                 .font(.system(size: 14))
