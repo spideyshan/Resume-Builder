@@ -4,12 +4,14 @@ struct ResumeAnalysisView: View {
     
     let resume: Resume
     let feedback: [String]
+    let suggestions: [KeywordGroup]
     @Binding var path: NavigationPath
     
     init(resume: Resume, path: Binding<NavigationPath>) {
         self.resume = resume
         self._path = path
         self.feedback = ResumeAnalyzer.analyze(resume: resume)
+        self.suggestions = KeywordSuggester.suggestKeywords(resume: resume)
     }
     
     var isComplete: Bool {
@@ -94,6 +96,48 @@ struct ResumeAnalysisView: View {
                     .cornerRadius(10)
                 }
                 
+                // Keyword Suggestions
+                if !suggestions.isEmpty {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Recommended Keywords")
+                            .font(.headline)
+                            .padding(.horizontal, 4)
+                        
+                        ForEach(suggestions) { group in
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(group.title)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.secondary)
+                                
+                                Text(group.description)
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                
+                                FlowLayout(spacing: 8) {
+                                    ForEach(group.keywords, id: \.self) { keyword in
+                                        Text(keyword)
+                                            .font(.caption)
+                                            .fontWeight(.medium)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 6)
+                                            .background(Color.blue.opacity(0.1))
+                                            .foregroundColor(.blue)
+                                            .cornerRadius(6)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color(.systemBackground))
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color(.systemGray5), lineWidth: 1)
+                            )
+                        }
+                    }
+                }
+                
                 // Preview Button
                 NavigationLink {
                     ResumePreviewView(resume: resume, path: $path)
@@ -120,4 +164,7 @@ struct ResumeAnalysisView: View {
             resumeManager.save(resume: resume)
         }
     }
-}
+    }
+
+
+
