@@ -84,3 +84,14 @@ ResumeCraft - Implemented Features
     - **One-Click Import**: Automatically fill the resume form by uploading a PDF or Image.
     - **On-Device OCR**: Uses Apple's **Vision Framework** to scan text securely on the device.
     - **Smart Mapping**: Automatically detects Name, Email, Phone, LinkedIn, and sections like Experience/Education.
+
+14. **Enhanced Custom Sections**:
+    - Added **Provider / Organization** name field.
+    - Added **Date of Providing** field.
+    - Added optional **Expiry Date** field.
+    - Rendered across all templates (Classic, Simple, Modern) in both SwiftUI preview and HTML/PDF export.
+
+15. **Resume Duplication**:
+    - **Long-press context menu** on any resume with Duplicate and Delete options.
+    - **Swipe-right** gesture reveals a teal Duplicate button.
+    - Creates a full copy with a new ID and "(Copy)" appended to the title.

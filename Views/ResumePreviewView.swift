@@ -13,17 +13,18 @@ struct ResumePreviewView: View {
     @State private var generatedPDFUrl: URL?
     @State private var showSaveError = false
     @State private var isGeneratingPDF = false
+    @State private var accentColor = Color(red: 0.2, green: 0.4, blue: 0.6)
     
     var body: some View {
         ScrollView {
             Group {
                 switch selectedTemplate {
                 case .classic:
-                    ClassicTemplateView(resume: resume, openURL: openURL)
+                    ClassicTemplateView(resume: resume, openURL: openURL, accentColor: accentColor)
                 case .simple:
-                    SimpleTemplateView(resume: resume, openURL: openURL)
+                    SimpleTemplateView(resume: resume, openURL: openURL, accentColor: accentColor)
                 case .modern:
-                    ModernTemplateView(resume: resume, openURL: openURL)
+                    ModernTemplateView(resume: resume, openURL: openURL, accentColor: accentColor)
                 }
             }
             .sheet(isPresented: $showTemplateSelector) {
@@ -36,14 +37,20 @@ struct ResumePreviewView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    showTemplateSelector = true
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "rectangle.3.group")
-                        Text("Template")
-                            .font(.system(size: 14))
+                HStack(spacing: 12) {
+                    Button {
+                        showTemplateSelector = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "rectangle.3.group")
+                            Text("Template")
+                                .font(.system(size: 14))
+                        }
                     }
+                    
+                    ColorPicker("", selection: $accentColor, supportsOpacity: false)
+                        .labelsHidden()
+                        .scaleEffect(0.8)
                 }
             }
             
@@ -154,8 +161,7 @@ struct ShareSheet: UIViewControllerRepresentable {
 struct ClassicTemplateView: View {
     let resume: Resume
     let openURL: OpenURLAction
-    
-    private let accentColor = Color(red: 0.2, green: 0.4, blue: 0.6)
+    var accentColor: Color = Color(red: 0.2, green: 0.4, blue: 0.6)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -516,6 +522,7 @@ struct ClassicSection<Content: View>: View {
 struct SimpleTemplateView: View {
     let resume: Resume
     let openURL: OpenURLAction
+    var accentColor: Color = .black
     
     var body: some View {
         VStack(spacing: 0) {
@@ -583,7 +590,7 @@ struct SimpleTemplateView: View {
             
             // Certifications
             if let certs = resume.certifications, !certs.isEmpty {
-                SimpleSection(title: "Certifications") {
+                SimpleSection(title: "Certifications", accentColor: accentColor) {
                     ForEach(certs) { cert in
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
@@ -620,7 +627,7 @@ struct SimpleTemplateView: View {
             
             // Skills
             if !resume.skills.isEmpty {
-                SimpleSection(title: "Skills") {
+                SimpleSection(title: "Skills", accentColor: accentColor) {
                     ForEach(SkillCategory.allCases) { category in
                         if let skills = resume.skills[category], !skills.isEmpty {
                             HStack(alignment: .top, spacing: 8) {
@@ -639,7 +646,7 @@ struct SimpleTemplateView: View {
             
             // Experience
             if !resume.experience.isEmpty {
-                SimpleSection(title: "Experience") {
+                SimpleSection(title: "Experience", accentColor: accentColor) {
                     ForEach(resume.experience) { exp in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack(alignment: .top) {
@@ -669,7 +676,7 @@ struct SimpleTemplateView: View {
             
             // Projects
             if !resume.projects.isEmpty {
-                SimpleSection(title: "Projects") {
+                SimpleSection(title: "Projects", accentColor: accentColor) {
                     ForEach(resume.projects) { project in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
@@ -703,7 +710,7 @@ struct SimpleTemplateView: View {
             
             // Education
             if !resume.education.isEmpty {
-                SimpleSection(title: "Education") {
+                SimpleSection(title: "Education", accentColor: accentColor) {
                     ForEach(resume.education) { edu in
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
@@ -732,7 +739,7 @@ struct SimpleTemplateView: View {
 
             // Languages
             if let langs = resume.languages, !langs.isEmpty {
-                SimpleSection(title: "Languages") {
+                SimpleSection(title: "Languages", accentColor: accentColor) {
                     HStack(alignment: .top, spacing: 8) {
                         Text("•")
                             .font(.system(size: 13, weight: .bold))
@@ -745,7 +752,7 @@ struct SimpleTemplateView: View {
             // Custom Sections
             if let sections = resume.customSections, !sections.isEmpty {
                 ForEach(sections) { section in
-                    SimpleSection(title: section.title) {
+                    SimpleSection(title: section.title, accentColor: accentColor) {
                         if let provider = section.provider, !provider.isEmpty {
                             HStack {
                                 Text(provider)
@@ -801,16 +808,18 @@ struct SimpleTemplateView: View {
 
 struct SimpleSection<Content: View>: View {
     let title: String
+    var accentColor: Color = .black
     @ViewBuilder let content: Content
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.system(size: 16, weight: .bold))
+                .foregroundColor(accentColor)
                 .frame(maxWidth: .infinity, alignment: .center)
             
             Rectangle()
-                .fill(Color.black)
+                .fill(accentColor)
                 .frame(height: 1)
                 .padding(.bottom, 4)
             
@@ -825,9 +834,11 @@ struct SimpleSection<Content: View>: View {
 struct ModernTemplateView: View {
     let resume: Resume
     let openURL: OpenURLAction
+    var accentColor: Color = Color(red: 0.15, green: 0.55, blue: 0.55)
     
-    private let accentColor = Color(red: 0.15, green: 0.55, blue: 0.55)
-    private let lightAccent = Color(red: 0.85, green: 0.95, blue: 0.95)
+    private var lightAccent: Color {
+        accentColor.opacity(0.15)
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
