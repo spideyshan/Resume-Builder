@@ -115,3 +115,20 @@ ResumeCraft - Implemented Features
     - **Context-Aware Recommendations**: Suggests missing high-value skills based on your primary role (e.g., specific Frontend frameworks).
     - **Power Word Detection**: Identifies and recommends strong action verbs ("Achieved", "Spearheaded") to improve impact.
     - **Interactive UI**: Displays suggestions as improved, clickable chips directly in the analysis view.
+
+20. **Multi-Format Export**:
+    - **Export As… Menu**: Toolbar dropdown lets you choose between PDF, Word (.docx), or Plain Text (.txt).
+    - **DOCX Export**: Generates a valid Office Open XML document with formatted headings, bold entries, bullet lists, and proper margins — opens in Microsoft Word, Google Docs, and Pages.
+    - **Plain Text Export**: Clean, ATS-friendly .txt output with section headers, contact info, and bullet points.
+    - **No Dependencies**: Pure-Swift ZIP implementation for DOCX — no external libraries required.
+    - **Section Order Respected**: All export formats honor the user's custom section ordering.
+
+21. **Cover Letter Generator**:
+    - **Auto-Fill from Resume**: Pulls your name, contact info, skills, experience, and projects directly from any saved resume.
+    - **Three Tones**: Choose Formal (traditional business letter), Modern (clean and direct), or Creative (bold and expressive).
+    - **Smart Text Assembly**: Generates a complete cover letter with opening, skills, experience, project highlights, and closing paragraphs — all tailored to the selected tone.
+    - **Job-Specific**: Enter the company name, job title, and an optional hiring manager name for personalized greetings.
+    - **Custom "Why" Paragraph**: Add your own reason for applying — it gets woven naturally into the opening.
+    - **Beautiful Preview**: Full HTML preview matching the tone's visual style (serif for Formal, clean sans-serif for Modern, gradient header for Creative).
+    - **PDF Export**: One-tap export to a professionally formatted PDF via the existing export pipeline.
+    - **Copy to Clipboard**: One-tap copy of the entire dated cover letter as plain text — paste directly into emails or job portals.

@@ -5,6 +5,7 @@ struct WelcomeView: View {
     @EnvironmentObject var resumeManager: ResumeManager
     @AppStorage("isDarkMode") private var isDarkMode = false
     @State private var showingResumeForm = false
+    @State private var showingCoverLetterForm = false
     @State private var path = NavigationPath()
     
     // Import State
@@ -131,6 +132,18 @@ struct WelcomeView: View {
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                     }
+                    
+                    // Cover Letter Button
+                    Button {
+                        showingCoverLetterForm = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "doc.text.fill")
+                            Text("Create Cover Letter")
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                    }
                     .padding(.bottom, 5)
                 }
                 .padding()
@@ -144,6 +157,9 @@ struct WelcomeView: View {
                 } else {
                     ResumeFormView(path: $path, existingResume: nil)
                 }
+            }
+            .navigationDestination(isPresented: $showingCoverLetterForm) {
+                CoverLetterFormView(path: $path)
             }
             .navigationDestination(for: Resume.self) { resume in
                 ResumeFormView(path: $path, existingResume: resume)
