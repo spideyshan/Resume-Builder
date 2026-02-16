@@ -14,6 +14,14 @@ struct HTMLGenerator {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=612, initial-scale=1.0">
             <style>
+                @page {
+                    size: 612px 792px;
+                    margin: 0;
+                }
+                @media print {
+                    .entry { page-break-inside: avoid; }
+                    .section-title { page-break-after: avoid; }
+                }
                 \(css)
             </style>
         </head>

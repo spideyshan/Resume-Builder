@@ -11,28 +11,24 @@ class PDFExporter: NSObject, WKNavigationDelegate {
     func exportToPDF(html: String, completion: @escaping (URL?) -> Void) {
         self.completion = completion
         
-        // Configure WebView with page dimensions so CSS layout works
+        // Width matches Letter page; tall height lets content fully render
         let config = WKWebViewConfiguration()
-        let pageFrame = CGRect(x: 0, y: 0, width: 612, height: 792)
+        let pageFrame = CGRect(x: 0, y: 0, width: 612, height: 5000)
         self.webView = WKWebView(frame: pageFrame, configuration: config)
         self.webView?.navigationDelegate = self
         self.webView?.isHidden = true
         
-        // Add to key window to ensure rendering (sometimes needed for WebKit)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
             window.addSubview(self.webView!)
         }
         
-        // Load HTML
-        let wrappedHTML = html
-        self.webView?.loadHTMLString(wrappedHTML, baseURL: nil)
+        self.webView?.loadHTMLString(html, baseURL: nil)
     }
     
     // MARK: - WKNavigationDelegate
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        // Delay slightly to ensure rendering (fonts, layout) is stable
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             guard let self = self else { return }
             self.createPDF()
@@ -51,37 +47,43 @@ class PDFExporter: NSObject, WKNavigationDelegate {
             return
         }
         
-        let pdfConfig = WKPDFConfiguration()
-        // Standard A4 / Letter approx points
-        pdfConfig.rect = CGRect(x: 0, y: 0, width: 612, height: 792) 
+        // Use UIPrintPageRenderer for proper multi-page A4/Letter pagination
+        let renderer = UIPrintPageRenderer()
+        let formatter = webView.viewPrintFormatter()
+        renderer.addPrintFormatter(formatter, startingAtPageAt: 0)
         
-        if #available(iOS 14.0, *) {
-            webView.createPDF(configuration: pdfConfig) { [weak self] result in
-                guard let self = self else { return }
-                
-                switch result {
-                case .success(let data):
-                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("Resume.pdf")
-                    do {
-                        try data.write(to: tempURL)
-                        self.completion?(tempURL)
-                    } catch {
-                        print("Failed to write PDF: \(error)")
-                        self.completion?(nil)
-                    }
-                case .failure(let error):
-                    print("Failed to create PDF: \(error)")
-                    self.completion?(nil)
-                }
-                
-                self.cleanup()
-            }
-        } else {
-            // Fallback or error for older iOS (not expected here)
-            print("iOS 14+ required for createPDF")
-            completion?(nil)
-            cleanup()
+        // Letter page size in points (8.5 x 11 inches)
+        let pageSize = CGSize(width: 612, height: 792)
+        let pageRect = CGRect(origin: .zero, size: pageSize)
+        
+        renderer.setValue(NSValue(cgRect: pageRect), forKey: "paperRect")
+        renderer.setValue(NSValue(cgRect: pageRect), forKey: "printableRect")
+        
+        // Render all pages into PDF data
+        let pdfData = NSMutableData()
+        UIGraphicsBeginPDFContextToData(pdfData, pageRect, nil)
+        
+        for i in 0..<renderer.numberOfPages {
+            UIGraphicsBeginPDFPage()
+            renderer.drawPage(at: i, in: UIGraphicsGetPDFContextBounds())
         }
+        
+        UIGraphicsEndPDFContext()
+        
+        // Save to temp file
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("Resume.pdf")
+        do {
+            if FileManager.default.fileExists(atPath: tempURL.path) {
+                try FileManager.default.removeItem(at: tempURL)
+            }
+            try pdfData.write(to: tempURL, options: .atomic)
+            self.completion?(tempURL)
+        } catch {
+            print("Failed to write PDF: \(error)")
+            self.completion?(nil)
+        }
+        
+        cleanup()
     }
     
     private func cleanup() {
