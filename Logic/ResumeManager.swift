@@ -68,7 +68,90 @@ class ResumeManager: ObservableObject {
             } catch {
                 print("Failed to list directory: \(error.localizedDescription)")
             }
+            
+            // Check if empty and load default if needed
+            DispatchQueue.main.async {
+                if self.savedResumes.isEmpty {
+                    self.createDefaultResume()
+                }
+            }
         }
+    }
+    
+    // MARK: - Default Data
+    private func createDefaultResume() {
+        let steveJobs = Resume(
+            id: UUID(),
+            lastModified: Date(),
+            title: "Visionary & Founder",
+            firstName: "Steve",
+            lastName: "Jobs",
+            email: "steve@apple.com",
+            countryCode: CountryCode(name: "United States", code: "US", dialCode: "+1"),
+            phone: "408-996-1010",
+            location: "Cupertino, CA",
+            linkedin: "linkedin.com/in/stevejobs",
+            github: "github.com/stevejobs",
+            education: [
+                Education(
+                    type: .degree,
+                    institution: "Reed College",
+                    degree: "Physics & Literature",
+                    field: "Liberal Arts",
+                    year: "1972",
+                    score: "Dropout"
+                )
+            ],
+            skills: [
+                .softSkills: ["Visionary Leadership", "Design Thinking", "Public Speaking", "Negotiation"],
+                .tools: ["Keynote", "Pixar RenderMan"],
+                .languages: ["English"]
+            ],
+            experience: [
+                Experience(
+                    title: "Co-Founder & CEO",
+                    company: "Apple Inc.",
+                    duration: "1997 - 2011",
+                    bullets: [
+                        "Revolutionized the mobile phone industry with the iPhone.",
+                        "Launched the iPad, creating the post-PC tablet category.",
+                        "Oversaw the development of the App Store, creating a new developer economy."
+                    ]
+                ),
+                Experience(
+                    title: "CEO & Owner",
+                    company: "Pixar Animation Studios",
+                    duration: "1986 - 2006",
+                    bullets: [
+                        "Executive Producer for Toy Story, the first purely computer-animated feature film.",
+                        "Scaled the company from a small hardware team to an animation powerhouse."
+                    ]
+                )
+            ],
+            projects: [
+                Project(
+                    name: "Macintosh",
+                    link: "apple.com/mac",
+                    tools: "Motorola 68000, QuickDraw",
+                    bullets: [
+                        "Led the team that built the first mass-market personal computer with a graphical user interface and mouse.",
+                        "Championed the 'bicycle for the mind' concept.",
+                        "Insisted on beautiful typography and rounded corners."
+                    ]
+                ),
+                Project(
+                    name: "NeXT Computer",
+                    link: "en.wikipedia.org/wiki/NeXT",
+                    tools: "Display PostScript, Mach Kernel",
+                    bullets: [
+                        "Created the workstation that Tim Berners-Lee used to invent the World Wide Web.",
+                        "Built an advanced object-oriented operating system that eventually became macOS."
+                    ]
+                )
+            ]
+        )
+        
+        save(resume: steveJobs)
     }
     
     // MARK: - Delete
