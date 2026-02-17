@@ -8,9 +8,7 @@ struct WelcomeView: View {
     @State private var showingCoverLetterForm = false
     @State private var path = NavigationPath()
     
-    // Import State
-    @State private var isImporting = false
-    @State private var importedResume: Resume? // Use this to trigger navigation if needed, or just pass to form
+
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -121,17 +119,7 @@ struct WelcomeView: View {
                         .cornerRadius(12)
                     }
                     
-                    // Import Resume Button
-                    Button {
-                        isImporting = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "square.and.arrow.down")
-                            Text("Import from PDF/Image")
-                        }
-                        .font(.subheadline)
-                        .foregroundStyle(.primary)
-                    }
+
                     
                     // Cover Letter Button
                     Button {
@@ -150,13 +138,7 @@ struct WelcomeView: View {
             }
             .navigationBarHidden(true)
             .navigationDestination(isPresented: $showingResumeForm) {
-                // Determine if we are passing an imported resume or nil
-                if let resume = importedResume {
-                    ResumeFormView(path: $path, existingResume: resume)
-                        .onDisappear { importedResume = nil } // Reset after use
-                } else {
-                    ResumeFormView(path: $path, existingResume: nil)
-                }
+                ResumeFormView(path: $path, existingResume: nil)
             }
             .navigationDestination(isPresented: $showingCoverLetterForm) {
                 CoverLetterFormView(path: $path)
@@ -164,31 +146,7 @@ struct WelcomeView: View {
             .navigationDestination(for: Resume.self) { resume in
                 ResumeFormView(path: $path, existingResume: resume)
             }
-            .fileImporter(
-                isPresented: $isImporting,
-                allowedContentTypes: [UTType.pdf, UTType.image],
-                allowsMultipleSelection: false
-            ) { result in
-                switch result {
-                case .success(let urls):
-                    guard let url = urls.first else { return }
-                    // Start accessing security scoped resource
-                    guard url.startAccessingSecurityScopedResource() else { return }
-                    
-                    defer { url.stopAccessingSecurityScopedResource() }
-                    
-                    Task {
-                        let parsedResume = await ResumeParser.parse(url: url)
-                        await MainActor.run {
-                            self.importedResume = parsedResume
-                            self.showingResumeForm = true
-                        }
-                    }
-                    
-                case .failure(let error):
-                    print("Import failed: \(error.localizedDescription)")
-                }
-            }
+
         }
         .onAppear {
             resumeManager.loadResumes()
