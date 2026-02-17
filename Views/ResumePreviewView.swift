@@ -11,6 +11,9 @@ struct ResumePreviewView: View {
     @State private var showTemplateSelector = false
     @State private var showShareSheet = false
     @State private var generatedPDFUrl: URL?
+    @State private var showingExportMenu = false
+    @State private var showingARCard = false
+    @State private var exportFormat: ExportFormat = .pdf
     @State private var showSaveError = false
     @State private var isGeneratingPDF = false
     @State private var accentColor = Color(red: 0.2, green: 0.4, blue: 0.6)
@@ -67,6 +70,12 @@ struct ResumePreviewView: View {
                             } label: {
                                 Label("Share / Export PDF", systemImage: "square.and.arrow.up")
                             }
+                            // Digital Card Button
+                            Button {
+                                showingARCard = true
+                            } label: {
+                                Label("Digital Card", systemImage: "qrcode")
+                            }
                             
                             ShareLink(item: PortfolioExportItem(resume: resume), preview: SharePreview("Portfolio Website", image: Image(systemName: "globe"))) {
                                 Label("Export as Website", systemImage: "globe")
@@ -101,6 +110,12 @@ struct ResumePreviewView: View {
                              ShareLink(item: PortfolioExportItem(resume: resume), preview: SharePreview("Portfolio Website", image: Image(systemName: "globe"))) {
                                  Image(systemName: "globe")
                              }
+                             
+                             Button {
+                                 showingARCard = true
+                             } label: {
+                                 Image(systemName: "qrcode")
+                             }
                          }
                         
                         Button {
@@ -116,6 +131,9 @@ struct ResumePreviewView: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $showingARCard) {
+            ARBusinessCardView(resume: resume)
         }
         .sheet(isPresented: $showShareSheet) {
             if let url = generatedPDFUrl {
@@ -191,6 +209,15 @@ struct ShareSheet: UIViewControllerRepresentable {
 }
 
 // MARK: - Legacy / Helper
+
+enum ExportFormat: String, CaseIterable, Identifiable {
+    case pdf = "PDF Document"
+    case docx = "Microsoft Word"
+    case txt = "Plain Text"
+    
+    var id: String { rawValue }
+}
+
 
 
 // MARK: - Classic Template (Professional with accent color)
