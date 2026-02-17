@@ -67,6 +67,10 @@ struct ResumePreviewView: View {
                             } label: {
                                 Label("Share / Export PDF", systemImage: "square.and.arrow.up")
                             }
+                            
+                            ShareLink(item: PortfolioExportItem(resume: resume), preview: SharePreview("Portfolio Website", image: Image(systemName: "globe"))) {
+                                Label("Export as Website", systemImage: "globe")
+                            }
                         }
                         
                         Button {
@@ -92,6 +96,10 @@ struct ResumePreviewView: View {
                                  generatePDFAndShare()
                              } label: {
                                  Image(systemName: "square.and.arrow.up")
+                             }
+                             
+                             ShareLink(item: PortfolioExportItem(resume: resume), preview: SharePreview("Portfolio Website", image: Image(systemName: "globe"))) {
+                                 Image(systemName: "globe")
                              }
                          }
                         
@@ -168,6 +176,8 @@ struct ResumePreviewView: View {
             self.isGeneratingPDF = false
         }
     }
+    
+    // Removed manual exportAsWebsite in favor of ShareLink
 }
 struct ShareSheet: UIViewControllerRepresentable {
     var items: [Any]
