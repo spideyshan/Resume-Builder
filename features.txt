@@ -71,8 +71,9 @@ ResumeCraft - Implemented Features
 71.     - **Lazy PDF Generation**: Generates PDFs only on demand (share/export) to reduce memory usage.
 72.     - **Async Data Loading**: Loads resumes in the background for faster app launch.
 73. 
+
 74. ## Scripts
-- `push_to_github.sh`: Helper script to automate git commands in iCloud environments.
+75. - `push_to_github.sh`: Helper script to automate git commands in iCloud environments.
 
 ## AI & Smart Features (New)
 12. **ATS Optimization**:
@@ -132,3 +133,10 @@ ResumeCraft - Implemented Features
     - **Beautiful Preview**: Full HTML preview matching the tone's visual style (serif for Formal, clean sans-serif for Modern, gradient header for Creative).
     - **PDF Export**: One-tap export to a professionally formatted PDF via the existing export pipeline.
     - **Copy to Clipboard**: One-tap copy of the entire dated cover letter as plain text — paste directly into emails or job portals.
+
+22. **Smart Interview Prep Mode (Core ML Enhanced)**:
+    - **Contextual Generation**: Uses Apple's **NaturalLanguage** framework to analyze your resume's bullet points and generate specific "Deep Dive" questions.
+    - **Semantic Skill Matching**: Uses **NLEmbedding** to understand relationships between skills (e.g., inferring "Python" knowledge from "Django" or "FastAPI").
+    - **Dynamic Question Bank**: Creates a unique set of 10 questions every session, prioritizing your specific achievements over generic templates.
+    - **Flashcard Drill**: Interactive flip-card UI with questions on front and detailed answers/guides on back.
+

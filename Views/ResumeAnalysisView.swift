@@ -160,6 +160,16 @@ struct ResumeAnalysisView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Review")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationLink {
+                    InterviewPrepView(resume: resume)
+                } label: {
+                    Label("Interview Prep", systemImage: "brain.head.profile")
+                }
+            }
+        }
+
         .onAppear {
             resumeManager.save(resume: resume)
         }
