@@ -78,4 +78,40 @@ ResumeCraft showcases advanced usage of the Apple ecosystem:
 
 ---
 
+## 🖼️ Screenshots
+
+_Add screenshots here_
+
+## 📹 Video Demo
+
+A comprehensive video walkthrough is included within the app to help you get started.
+
+## 🏆 Credits
+
+- **Zero Third-Party Dependencies**: This project relies entirely on native Apple frameworks (SwiftUI, ARKit, Core ML, PDFKit) and contains no external libraries.
+- **Assets**: All icons used are native SF Symbols.
+
+---
+
+## 🔧 Requirements
+
+- iOS 16.0+
+- iPadOS 16.0+
+- Xcode 14.0+
+- Swift 5.7+
+
+## 🚀 Getting Started
+
+1. Clone the repository
+2. Open in Swift Playgrounds or Xcode
+3. Build and run on simulator or device
+
+## 🛡️ Privacy
+
+This app requests access to:
+
+- **Camera**: For scanning QR codes and placing AR Business Cards.
+
+---
+
 _Built with ❤️ in Swift._

@@ -20,20 +20,31 @@ class ResumeManager: ObservableObject {
         var resumeToSave = resume
         resumeToSave.lastModified = Date() // Update timestamp
         
+        // Update in-memory immediately
+        if let index = savedResumes.firstIndex(where: { $0.id == resumeToSave.id }) {
+            savedResumes[index] = resumeToSave
+        } else {
+            savedResumes.insert(resumeToSave, at: 0)
+        }
+        
+        // Sort to ensure order
+        savedResumes.sort { $0.lastModified > $1.lastModified }
+        
         let filename = "\(resumeToSave.id.uuidString).json"
         let fileURL = documentsDirectory.appendingPathComponent(filename)
         
-        do {
-            let data = try JSONEncoder().encode(resumeToSave)
-            try data.write(to: fileURL)
-            // Refresh list
-            loadResumes()
-            print("Successfully saved resume: \(resumeToSave.fullName)")
-            return true
-        } catch {
-            print("Failed to save resume: \(error.localizedDescription)")
-            return false
+        // Perform file I/O in background
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let data = try JSONEncoder().encode(resumeToSave)
+                try data.write(to: fileURL)
+                print("Successfully saved resume: \(resumeToSave.fullName)")
+            } catch {
+                print("Failed to save resume: \(error.localizedDescription)")
+            }
         }
+        
+        return true
     }
     
     // MARK: - Load
@@ -156,16 +167,23 @@ class ResumeManager: ObservableObject {
     
     // MARK: - Delete
     func delete(resume: Resume) {
+        // Remove from memory immediately
+        if let index = savedResumes.firstIndex(where: { $0.id == resume.id }) {
+            savedResumes.remove(at: index)
+        }
+        
         let filename = "\(resume.id.uuidString).json"
         let fileURL = documentsDirectory.appendingPathComponent(filename)
         
-        do {
-            try fileManager.removeItem(at: fileURL)
-            // Refresh list
-            loadResumes()
-            print("Successfully deleted resume: \(resume.fullName)")
-        } catch {
-            print("Failed to delete resume: \(error.localizedDescription)")
+        // Perform file removal in background
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            do {
+                try self.fileManager.removeItem(at: fileURL)
+                print("Successfully deleted resume: \(resume.fullName)")
+            } catch {
+                print("Failed to delete resume: \(error.localizedDescription)")
+            }
         }
     }
     
