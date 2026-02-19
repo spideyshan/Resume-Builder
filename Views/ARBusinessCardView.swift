@@ -9,6 +9,8 @@ struct ARBusinessCardView: View {
     
     var body: some View {
         VStack(spacing: 30) {
+            Spacer()
+            
             // Header
             Text("Digital Business Card")
                 .font(.title2.bold())
@@ -34,8 +36,7 @@ struct ARBusinessCardView: View {
                     .padding(.top, 8)
             }
             
-            Divider()
-                .padding(.horizontal)
+
             
             Spacer()
         }
