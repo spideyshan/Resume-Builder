@@ -6,7 +6,7 @@
 
 **ResumeCraft** is more than just a resume builder; it is a comprehensive career companion designed to help students and professionals craft compelling narratives, optimize for Applicant Tracking Systems (ATS), and prepare for interviews—all within a beautiful, native iOS experience.
 
-Born from the frustration of formatting complex documents, ResumeCraft leverages the power of **SwiftUI**, **ARKit**, and **Core ML** to transform a tedious chore into an engaging, creative process.
+Born from the frustration of formatting complex documents, ResumeCraft leverages the power of **SwiftUI** and **Core ML** to transform a tedious chore into an engaging, creative process.
 
 ---
 
@@ -37,10 +37,10 @@ Born from the frustration of formatting complex documents, ResumeCraft leverages
 - **Auto-Drafting**: Pulls key highlights from your resume to verify alignment between your application and your CV.
 - **Export Options**: Save as PDF or copy text directly to your clipboard.
 
-### 5. 👓 **AR Business Card (Augmented Reality)**
+### 5. 📇 **Digital Business Card**
 
-- **Interactive Experience**: Project a 3D, interactive business card onto any surface using **ARKit**.
-- **Contact Sharing**: A fun, memorable way to share contact details at networking events.
+- **Quick Connection**: Instantly generate a personalized QR code containing your vCard information.
+- **Contact Sharing**: A fast, seamless way to share contact details with recruiters and peers at networking events.
 
 ### 6. 📤 **Professional Export & Sharing**
 
@@ -56,7 +56,6 @@ ResumeCraft showcases advanced usage of the Apple ecosystem:
 
 - **SwiftUI & MVVM**: Built entirely with SwiftUI, utilizing a clean MVVM architecture for separation of concerns and testability.
 - **Data Persistence**: Custom JSON-based storage engine with FileManager for saving, duplicating, and managing multiple resumes.
-- **RealityKit**: `RealityKit` entities for the immersive Business Card feature.
 - **NaturalLanguage Framework**: Used for `NLEmbedding` to find semantic similarities in skills and generate context-aware questions.
 - **PDFKit**: Leverages `UIGraphicsPDFRenderer` for pixel-perfect document generation.
 - **AVKit**: Integrates a seamless video walkthrough for user onboarding.
@@ -88,7 +87,7 @@ A comprehensive video walkthrough is included within the app to help you get sta
 
 ## 🏆 Credits
 
-- **Zero Third-Party Dependencies**: This project relies entirely on native Apple frameworks (SwiftUI, ARKit, Core ML, PDFKit) and contains no external libraries.
+- **Zero Third-Party Dependencies**: This project relies entirely on native Apple frameworks (SwiftUI, Core ML, PDFKit) and contains no external libraries.
 - **Assets**: All icons used are native SF Symbols.
 
 ---
